@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نموذج مخازن أبوهادي 155 — جولة</title>
+<style>
+ :root{--navy:#0B2340;--amber:#f0b429}
+ html,body{margin:0;height:100%;background:#aeb6bd;font-family:Tahoma,"Segoe UI",Arial;color:#0b1f3a;overflow:hidden}
+ #c{display:block;width:100vw;height:100vh}
+ #bar{position:fixed;top:10px;right:10px;background:rgba(11,31,58,.94);color:#fff;border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.35);max-width:min(94vw,540px);overflow:hidden}
+ #barhead{display:flex;align-items:center;gap:6px;padding:7px 9px}
+ #barhead .ttl{font-weight:700;color:var(--amber);font-size:13.5px;margin-right:auto}
+ #barhead button{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;line-height:1}
+ #barhead button:hover{background:#1c4a80}
+ #barhead #menu{font-size:15px;padding:5px 11px}
+ #barbody{padding:0 10px 10px}
+ #bar.collapsed #barbody{display:none}
+ .hint{margin-top:8px;font-size:11px;color:#9fb3d0}
+ .btns{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+ .btns button{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:7px;padding:5px 8px;font-size:12px;cursor:pointer}
+ .btns button:hover{background:#1c4a80}
+ .btns button.on{background:var(--amber);color:#0b2340;border-color:var(--amber);font-weight:700}
+ .btns select{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:7px;padding:5px 8px;font-size:12px;cursor:pointer}
+ .btns .step{background:#214a7d}
+ .tg{margin-top:8px;font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
+ #title{position:fixed;bottom:12px;right:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:8px 14px;box-shadow:0 2px 10px rgba(0,0,0,.2);max-width:62vw}
+ #title h1{margin:0;font-size:16px}#title p{margin:3px 0 0;font-size:12px;color:#334}
+ #legend{position:fixed;bottom:12px;left:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:7px 12px;font-size:11.5px;box-shadow:0 2px 10px rgba(0,0,0,.2);max-width:46vw}
+ #legend.collapsed .legbody{display:none}
+ #legtog{cursor:pointer;font-weight:700;color:#0b2340;font-size:12px;user-select:none}
+ .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-left:5px}
+ .tag{display:inline-block;background:var(--amber);color:#0b1f3a;border-radius:5px;padding:1px 7px;font-weight:700;font-size:11px}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div id="bar" class="collapsed">
+ <div id="barhead">
+  <button id="menu" title="القائمة والمشاهد">☰ المشاهد</button>
+  <button id="pv" title="السابق">‹</button>
+  <button id="nx" title="التالي">›</button>
+  <button id="lbl" title="كثافة الأسماء">الأسماء: مختصر</button>
+  <span class="ttl">أبوهادي 155</span>
+ </div>
+ <div id="barbody">
+  <div class="hint">المشاهد (16):</div>
+  <div class="btns" id="views"></div>
+  <div class="hint">دخول مخزن:</div>
+  <div class="btns" id="whbtns"></div>
+  <div class="btns" id="ctrls"></div>
+  <div class="tg">
+   <label><input type="checkbox" id="roof"> السقف</label>
+   <label><input type="checkbox" id="proposed" checked> المقترح (الرامب/الرفوف)</label>
+   <input type="checkbox" id="labels" checked style="display:none">
+  </div>
+ </div>
+</div>
+<div id="title"><h1>—</h1><p>—</p></div>
+<div id="legend" class="collapsed">
+ <div id="legtog">▸ مفتاح الألوان</div>
+ <div class="legbody">
+ <div style="margin-top:6px"><span class="sw" style="background:#1d49a0"></span>قوائم الرفوف &nbsp; <span class="sw" style="background:#e67010"></span>عوارض/أبواب تحميل</div>
+ <div><span class="sw" style="background:#c29a62"></span>طبليات بضائع &nbsp; <span class="sw" style="background:#dce9f4"></span>غرف تبريد/تجميد</div>
+ <div><span class="sw" style="background:#b53730"></span>خزان الحريق &nbsp; <span class="sw" style="background:#f2c200"></span>خطوط الممرات</div>
+ <div style="margin-top:5px;border-top:1px solid #e3e3e8;padding-top:5px;font-weight:700;color:#334">القطاعات التخزينية (لوحة واجهة كل مخزن):</div>
+ <div><span class="sw" style="background:#e6a32e"></span>غذائي جاف &nbsp; <span class="sw" style="background:#2e8ad1"></span>مشروبات &nbsp; <span class="sw" style="background:#8f57b8"></span>ملابس</div>
+ <div><span class="sw" style="background:#6b7585"></span>تغليف ومساند &nbsp; <span class="sw" style="background:#d17038"></span>غير غذائي &nbsp; <span class="sw" style="background:#dce9f4"></span>مبرّد −20°</div>
+ <div style="margin-top:4px;color:#556">تصور مقترح وفق تقرير المتطلبات — ليس مخطط تنفيذ إنشائي</div>
+ </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>document.write('<script src="site_scene.js?v='+Date.now()+'"><\/script>')</script>
+<script>
+const SCENE=window.SCENE, B=SCENE.boxes;
+const toT=(x,y,z)=>new THREE.Vector3(x,z,y);
+const renderer=new THREE.WebGLRenderer({canvas:c,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15;
+const scene=new THREE.Scene();
+(function(){const cc=document.createElement('canvas');cc.width=16;cc.height=256;const g=cc.getContext('2d');
+ const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#8fb8e6');gr.addColorStop(.5,'#c7dcef');gr.addColorStop(1,'#e9eef2');
+ g.fillStyle=gr;g.fillRect(0,0,16,256);scene.background=new THREE.CanvasTexture(cc);})();
+scene.fog=new THREE.Fog(0xc7dcef,420,1500);
+const cam=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.3,6000);
+scene.add(new THREE.HemisphereLight(0xbcd6f2,0x6a645c,0.70));
+scene.add(new THREE.AmbientLight(0xffffff,0.22));
+let sun=new THREE.DirectionalLight(0xfff0db,1.15); sun.position.set(360,320,120); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048); sun.shadow.camera.near=10; sun.shadow.camera.far=1400;
+sun.shadow.camera.left=-300; sun.shadow.camera.right=300; sun.shadow.camera.top=300; sun.shadow.camera.bottom=-300; sun.shadow.bias=-0.0005;
+sun.target.position.set(188,0,118); scene.add(sun); scene.add(sun.target);
+let sun2=new THREE.DirectionalLight(0xdce8ff,.28); sun2.position.set(-180,220,-150); scene.add(sun2);
+const CAST=new Set(['wall','roof','roof2','building','cold','col','canopy','truck','car','cylinder','fence','gate','gen','tank','office','guard','dockdoor','person','fork','tree']);
+
+const roofs=[],centers={},labelled=[],propMeshes=[];
+for(const b of B){
+  const [sx,sy,sz]=b.dimensions_m,[px,py,pz]=b.position_m,col=b.color;
+  const cx=px+sx/2,cy=py+sy/2,cz=pz+sz/2;
+  let m; const glass=b.type==='glass', light=b.type==='light';
+  const mo={color:new THREE.Color(...col),roughness:glass?0.12:(b.type==='roof'||b.type==='roof2'?0.55:0.92),metalness:glass?0.35:(b.type==='rack_up'||b.type==='rack_bm'?0.3:0.0)};
+  if(light){mo.emissive=new THREE.Color(1,0.96,0.75);mo.emissiveIntensity=0.9;}
+  if(b.type==='cylinder'){
+    const g=new THREE.CylinderGeometry(sx/2,sx/2,sz,22);
+    m=new THREE.Mesh(g,new THREE.MeshStandardMaterial(mo)); m.position.copy(toT(cx,cy,cz));
+  }else{
+    const g=new THREE.BoxGeometry(sx,sz,sy);
+    m=new THREE.Mesh(g,new THREE.MeshStandardMaterial(mo)); m.position.copy(toT(cx,cy,cz));
+    if(['wall','rack_up','cold','building','col'].includes(b.type)){
+      const e=new THREE.LineSegments(new THREE.EdgesGeometry(g),new THREE.LineBasicMaterial({color:0x2a3b52,transparent:true,opacity:.16}));
+      e.position.copy(m.position); scene.add(e); m.userData.edge=e;
+    }
+  }
+  if(b.rotation){ const ry=-b.rotation*Math.PI/180; m.rotation.y=ry; if(m.userData.edge) m.userData.edge.rotation.y=ry; }
+  m.castShadow=CAST.has(b.type); m.receiveShadow=!light;
+  m.userData.b=b; scene.add(m); centers[b.id]=toT(cx,cy,cz);
+  if(b.type==='roof'){roofs.push(m); if(m.userData.edge)roofs.push(m.userData.edge);}
+  if(b.state==='proposed'){propMeshes.push(m); if(m.userData.edge)propMeshes.push(m.userData.edge);}
+  if(b.label) labelled.push({id:b.id,txt:b.label,p:toT(cx,cy,cz+ (sz>5?sz/2:0)),pri:Math.max(sx,sy,sz),prop:b.state==='proposed',grp:b.group||''});
+}
+// labels: drawn on a 2D overlay canvas (anchor dot + leader line + clean chip) — one painter for live & export
+// category colour-coding (best practice: labels parse by type at a glance)
+const CATCOL={req:'#f0b429',cold:'#45b8c8',ops:'#3fa85a',support:'#8893a0',admin:'#b48ad6',zone:'#5b9bd5',info:'#b9c6d6'};
+const CATNAME={req:'مقترح/متطلب',cold:'التبريد',ops:'العمليات',support:'المساندة',admin:'الإدارة Z1',zone:'المناطق',info:'الموقع'};
+function labCat(o){ if(o.prop)return'req'; const g=o.grp; if(g==='cold')return'cold'; if(g==='ops')return'ops'; if(g==='support')return'support'; if(g==='admin')return'admin'; if(g==='zone')return'zone'; return'info'; }
+const LABELS=labelled.map(o=>({p:o.p,txt:o.txt,pri:o.pri,prop:o.prop,col:CATCOL[labCat(o)]}));
+const ov=document.createElement('canvas');ov.id='ov';
+ov.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none';document.body.appendChild(ov);
+const octx=ov.getContext('2d');
+function sizeOv(){const dpr=Math.min(devicePixelRatio,2);ov.width=innerWidth*dpr;ov.height=innerHeight*dpr;octx.setTransform(dpr,0,0,dpr,0,0);}
+function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+// shared label painter: cull far/out-of-frame, nearest-first, de-dup, collision-avoid with upward nudge, cap count
+function paintLabels(g,W,H,o){
+ g.save();g.textAlign='center';g.direction='rtl';g.textBaseline='middle';
+ const camDist=cam.position.distanceTo(target), maxD=Math.max(o.minD,camDist*o.kD);
+ let cands=[];
+ for(const L of LABELS){ if(L.prop&&!proposed.checked)continue;
+  const v=L.p.clone().project(cam); if(v.z>1)continue;
+  const d=cam.position.distanceTo(L.p); if(d>maxD)continue;
+  const x=(v.x*.5+.5)*W, y=(-v.y*.5+.5)*H; if(x<12||x>W-12||y<18||y>H-18)continue;
+  const dc=(x-W/2)*(x-W/2)+(y-H*0.52)*(y-H*0.52); cands.push({L,x,y,d,dc}); }
+ cands.sort((a,b)=>(a.dc-b.dc));   // prefer names nearest the view centre (less scatter)
+ const seen=new Set(); cands=cands.filter(c=>!seen.has(c.L.txt)&&seen.add(c.L.txt));
+ g.font=o.font; const placed=[];
+ for(const c of cands){ if(placed.length>=o.maxN)break;
+  const txt=(o.maxLen&&c.L.txt.length>o.maxLen)?c.L.txt.slice(0,o.maxLen-1)+'…':c.L.txt;
+  const tw=g.measureText(txt).width, cw=tw+o.pad*2+7, ch=o.chipH;
+  let ay=c.y-o.off;
+  for(let k=0;k<7;k++){ const r={x1:c.x-cw/2,y1:ay-ch/2,x2:c.x+cw/2,y2:ay+ch/2};
+   if(!placed.some(p=>!(r.x2<p.x1-o.gap||r.x1>p.x2+o.gap||r.y2<p.y1-o.gap||r.y1>p.y2+o.gap))){
+    placed.push({x1:r.x1,y1:r.y1,x2:r.x2,y2:r.y2,ax:c.x,ay:c.y,cx:c.x,cy:ay,cw,ch,txt:txt,col:c.L.col}); break; }
+   ay-=(ch+o.gap); } }
+ // pass 1: leader lines + anchor dots
+ for(const p of placed){ g.lineWidth=o.line;g.strokeStyle=(p.col||'#f0b429')+'cc';
+  g.beginPath();g.moveTo(p.ax,p.ay);g.lineTo(p.cx,p.cy+p.ch/2);g.stroke();
+  g.beginPath();g.arc(p.ax,p.ay,o.dotR,0,7);g.fillStyle=p.col||'#f0b429';g.fill();
+  g.lineWidth=o.line;g.strokeStyle='rgba(11,31,58,.95)';g.stroke(); }
+ // pass 2: chips + text — navy card + category accent bar (best practice: colour = category)
+ for(const p of placed){ g.fillStyle='rgba(11,31,58,.93)'; rr(g,p.cx-p.cw/2,p.cy-p.ch/2,p.cw,p.ch,o.rad); g.fill();
+  g.fillStyle=p.col||'#f0b429'; rr(g,p.cx+p.cw/2-5,p.cy-p.ch/2,5,p.ch,o.rad); g.fill();   // category accent bar (RTL start side)
+  g.lineWidth=1.2;g.strokeStyle=(p.col||'#f0b429'); rr(g,p.cx-p.cw/2,p.cy-p.ch/2,p.cw,p.ch,o.rad); g.stroke();
+  g.fillStyle='#fff'; g.fillText(p.txt,p.cx-2,p.cy+o.ty); }
+ g.restore();
+}
+
+const grid=new THREE.GridHelper(400,40,0x5a6b7d,0x8894a1);grid.position.set(188,0.01,118);scene.add(grid);
+
+const PRE={
+ 1:{n:'01 المخطط العام والمناطق الخمس',s:'Z1 الإدارة · Z2 المواقف/البوابة · Z3 الثلاجات · Z4 الرئيسية · Z5 الجنوبية — ~7 هكتار',cam:[232,360,-36],tgt:[186,0,116],roof:true},
+ 2:{n:'02 Z2 — البوابة والمواقف',s:'مدخل جنوبي غربي · ميزان 60ط · انتظار الشاحنات 73.46م',cam:[62,32,-24],tgt:[54,6,74],roof:true},
+ 3:{n:'03 واجهات المخازن والأبواب الأرضية',s:'أبواب أرضية وطرق خدمة (قائم) — الشريط الجنوبي Z5',cam:[36,42,-4],tgt:[210,6,52],roof:false},
+ 4:{n:'04 داخل E-5 — الممر الداخلي',s:'ممر شاحنات 5.50م أبواب أرضية (قائم) + رفوف مقترحة',cam:[215,3.0,167.5],tgt:[308,1.8,167.5],roof:false},
+ 5:{n:'05 E-5 — الأكبر 100×35م (أعلى Z4)',s:'3,500م² · غذائي جاف · فريق 7–9 · ممر أوسط',cam:[236,18,122],tgt:[270,4,165],roof:false},
+ 6:{n:'06 Z4 — العمود الطويل 110×20م',s:'E-1·E-6·E-7 مكدّسة + طرق الوصول بين الصفوف',cam:[250,30,34],tgt:[318,5,104],roof:false},
+ 7:{n:'07 المنظومات المساندة والمحاور',s:'الحريق · المضخة · المولدات · الغرفة الكهربائية · الشبكات · التكييف — 22 محورًا',cam:[374,56,132],tgt:[332,5,180],roof:true},
+ 8:{n:'08 تدفّق العمليات بين المناطق',s:'البوابة ← الاستلام ← التخزين ← الصرف',cam:[190,215,-120],tgt:[186,0,108],roof:false},
+ 9:{n:'09 Z4 — العمود الصغير (العائلات)',s:'E-2·E-3·E-4 · مشروبات/ملابس/تغليف — ترميز لوني',cam:[162,30,34],tgt:[222,4,104],roof:false},
+ 10:{n:'10 داخل مخزن طويل E-1',s:'ممر داخلي 5.50م وأبواب أرضية ورفوف على الجانبين',cam:[261,3.0,130],tgt:[364,1.8,130],roof:false},
+ 11:{n:'11 القائم مقابل المقترح',s:'الأبواب الأرضية والممر (قائم) · الرفوف والأرصفة (مقترح)',cam:[300,22,28],tgt:[316,4,72],roof:false},
+ 12:{n:'12 منظور مجسّم لـ E-5',s:'مقطع ثلاثي الأبعاد بالتفاصيل الداخلية',cam:[246,46,112],tgt:[300,4,167],roof:false},
+ 13:{n:'13 Z3 — المبرّد E-F · 12 غرفة',s:'CS-1..CS-12 · 8 أرصفة · ممر رافعات · 4,632 موقع',cam:[106,62,24],tgt:[140,2,104],roof:false},
+ 14:{n:'14 صالة الأرصفة والحاويات المبرّدة',s:'8 أرصفة Dock Leveler · حاويات مبرّدة 40ft (جنوب Z3)',cam:[140,20,30],tgt:[140,3,70],roof:false},
+ 15:{n:'15 الرامب الخارجي المقترح + المتطلبات',s:'منصة 1.20م · Dock Leveler · باب 4×4.5م — فكرة على المخازن',cam:[300,16,30],tgt:[314,3,64],roof:true},
+ 16:{n:'16 Z1 — الواجهة الإدارية والخدمية',s:'إداري بطابقين · نوافذ شريطية ومظلة مدخل · سواري الأعلام',cam:[46,18,116],tgt:[42,4,158],roof:false},
+};
+function applyRoof(){const on=roof.checked;roofs.forEach(m=>m.visible=on);}
+let target=new THREE.Vector3(150,0,110);
+// smooth camera glide (eased) — removes the jarring instant jumps
+let gP0,gT0,gP1,gT1,gT=1;
+function glide(cp,tp){gP0=cam.position.clone();gT0=target.clone();gP1=new THREE.Vector3(cp[0],cp[1],cp[2]);gT1=new THREE.Vector3(tp[0],tp[1],tp[2]);gT=0;}
+function setCam(cp,tp){cam.position.set(cp[0],cp[1],cp[2]);target.set(tp[0],tp[1],tp[2]);cam.lookAt(target);}
+function setTitle(n,s){title.querySelector('h1').textContent=n;title.querySelector('p').textContent=s;}
+let curView=1;
+function setPreset(i,instant){const p=PRE[i];if(!p)return;curView=+i;roof.checked=p.roof;applyRoof();
+ if(instant)setCam(p.cam,p.tgt);else glide(p.cam,p.tgt);
+ setTitle(p.n,p.s);location.hash='view='+i;highlight();}
+function highlight(){[...views.children].forEach(b=>b.classList.toggle('on',+b.dataset.i===curView));}
+// view buttons — named, so navigation reads at a glance
+const SH={1:'عام',2:'البوابة',3:'الواجهات',4:'داخل E‑5',5:'E‑5',6:'الصف الطويل',7:'المساندة',8:'التدفّق',9:'العائلات',10:'داخل E‑1',11:'قائم/مقترح',12:'مقطع E‑5',13:'المبرّد',14:'الأرصفة',15:'الرامب',16:'الإداري'};
+Object.keys(PRE).forEach(i=>{const b=document.createElement('button');b.dataset.i=i;b.textContent=i+'· '+(SH[i]||'');b.title=PRE[i].n;b.onclick=()=>setPreset(i);views.appendChild(b);});
+roof.onchange=applyRoof; proposed.onchange=()=>propMeshes.forEach(m=>m.visible=proposed.checked);
+function step(d){let n=curView+d; if(n<1)n=16; if(n>16)n=1; setPreset(n);}
+// per-warehouse entry (dropdown) — looks down the aisle (long axis) from the west door
+const WH=(SCENE.meta.warehouses||[]), COLD=SCENE.meta.cold;
+function enterWH(w){roof.checked=false;applyRoof();const ay=w.y+w.l/2;glide([w.x+3,3.0,ay],[w.x+w.w-4,1.8,ay]);
+ setTitle('داخل مخزن '+w.name,'ممر 5.50م · دخول من الباب الغربي — '+w.w+'×'+w.l+'م');}
+function enterCold(){roof.checked=false;applyRoof();glide([COLD.x-8,40,COLD.y-10],[COLD.x+COLD.w*0.5,2,COLD.y+COLD.l*0.55]);
+ setTitle('الثلاجات — 12 غرفة','صالة أرصفة · ممر رافعات · 4,632 موقع طبلية');}
+const sel=document.createElement('select');
+sel.innerHTML='<option value="">— اختر مخزنًا للدخول —</option>'+WH.filter(w=>w.name!=='E-F').map((w,i)=>`<option value="${i}">دخول مخزن ${w.name}</option>`).join('')+'<option value="cold">دخول الثلاجات E‑F</option>';
+const WHd=WH.filter(w=>w.name!=='E-F');
+sel.onchange=()=>{const v=sel.value;if(v==='cold')enterCold();else if(v!=='')enterWH(WHd[+v]);sel.selectedIndex=0;};
+whbtns.appendChild(sel);
+function zoom(f){const o=cam.position.clone().sub(target);o.multiplyScalar(f);if(o.length()>2&&o.length()<2200){cam.position.copy(target.clone().add(o));cam.lookAt(target);}}
+function topView(){roof.checked=true;applyRoof();glide([188,340,118],[188,0,118]);setTitle('منظر علوي','المسقط العلوي للموقع · المناطق الخمس');}
+[['‹ السابق',()=>step(-1),'step'],['التالي ›',()=>step(1),'step'],['＋ تقريب',()=>zoom(0.8)],['－ تبعيد',()=>zoom(1.25)],['علوي',topView],['إعادة',()=>setPreset(1)]].forEach(([t,fn,cl])=>{const b=document.createElement('button');b.textContent=t;if(cl)b.className=cl;b.onclick=fn;ctrls.appendChild(b);});
+// keyboard: Shift+←/→ step tour · ←/→/↑/↓ orbit · +/- zoom
+addEventListener('keydown',e=>{ if(e.shiftKey&&e.key==='ArrowLeft'){step(-1);return;} if(e.shiftKey&&e.key==='ArrowRight'){step(1);return;}
+ const o=cam.position.clone().sub(target),r=o.length();let th=Math.atan2(o.z,o.x),ph=Math.acos(o.y/r);
+ if(e.key==='ArrowLeft')th-=0.12; else if(e.key==='ArrowRight')th+=0.12; else if(e.key==='ArrowUp')ph=Math.max(0.05,ph-0.08); else if(e.key==='ArrowDown')ph=Math.min(Math.PI/2.02,ph+0.08);
+ else if(e.key==='+'||e.key==='=')return zoom(0.85); else if(e.key==='-')return zoom(1.18); else return;
+ gT=1;cam.position.set(target.x+r*Math.sin(ph)*Math.cos(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(target);});
+// orbit (drag/wheel cancel any active glide)
+let drag=false,lx,ly;const cvm=renderer.domElement;
+cvm.addEventListener('mousedown',e=>{drag=true;gT=1;lx=e.clientX;ly=e.clientY;});
+addEventListener('mouseup',()=>drag=false);
+addEventListener('mousemove',e=>{if(!drag)return;const dx=(e.clientX-lx)/160,dy=(e.clientY-ly)/160;lx=e.clientX;ly=e.clientY;
+ if(walk){yaw+=dx;pitch=Math.max(-1.2,Math.min(1.2,pitch-dy));return;}
+ const o=cam.position.clone().sub(target),r=o.length();let th=Math.atan2(o.z,o.x),ph=Math.acos(o.y/r);
+ th-=dx;ph=Math.max(0.05,Math.min(Math.PI/2.02,ph-dy));orbVel.th=-dx;orbVel.ph=-dy;
+ cam.position.set(target.x+r*Math.sin(ph)*Math.cos(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(target);});
+cvm.addEventListener('wheel',e=>{e.preventDefault();gT=1;const o=cam.position.clone().sub(target);o.multiplyScalar(e.deltaY>0?1.08:0.92);cam.position.copy(target.clone().add(o));cam.lookAt(target);},{passive:false});
+function resize(){renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();sizeOv();}
+onresize=resize;resize();
+const LIVE={font:'600 12px Tahoma',pad:8,chipH:21,off:13,gap:5,maxN:5,dotR:3,line:1.2,rad:5,ty:1,minD:60,kD:0.95,maxLen:30};
+const EXPO={font:'600 21px Tahoma',pad:12,chipH:33,off:30,gap:8,maxN:12,dotR:4.5,line:1.9,rad:7,ty:1,minD:72,kD:0.98};
+labels.onchange=()=>{if(!labels.checked)octx.clearRect(0,0,innerWidth,innerHeight);};
+// ---- compact UI: collapsible bar/legend + label-density toggle (declutter) ----
+const bar=document.getElementById('bar'), menuBtn=document.getElementById('menu'), lblBtn=document.getElementById('lbl'), legend=document.getElementById('legend'), legtog=document.getElementById('legtog');
+menuBtn.onclick=()=>bar.classList.toggle('collapsed');
+document.getElementById('pv').onclick=()=>step(-1);
+document.getElementById('nx').onclick=()=>step(1);
+legtog.onclick=()=>{legend.classList.toggle('collapsed');legtog.textContent=(legend.classList.contains('collapsed')?'▸':'▾')+' مفتاح الألوان';};
+const DENS=[{n:'بلا',max:0},{n:'مختصر',max:5},{n:'الكل',max:13}]; let dens=1;
+function applyDens(){labels.checked=DENS[dens].max>0;LIVE.maxN=DENS[dens].max||5;lblBtn.textContent='الأسماء: '+DENS[dens].n;if(!labels.checked)octx.clearRect(0,0,innerWidth,innerHeight);}
+lblBtn.onclick=()=>{dens=(dens+1)%DENS.length;applyDens();};
+applyDens();
+// ---- UX: guided auto-tour · first-person walk mode · orbit inertia ----
+let tour=null;
+const tourBtn=document.createElement('button');tourBtn.textContent='▶ جولة تلقائية';tourBtn.className='step';
+tourBtn.onclick=()=>{ if(tour){clearInterval(tour);tour=null;tourBtn.textContent='▶ جولة تلقائية';}
+ else{ if(walk)endWalk(); tourBtn.textContent='⏸ إيقاف الجولة'; step(1); tour=setInterval(()=>step(1),6500);} };
+ctrls.appendChild(tourBtn);
+let walk=false,yaw=0,pitch=0;const keys={};const wpos=new THREE.Vector3();const orbVel={th:0,ph:0};
+const whint=document.createElement('div');whint.textContent='WASD للتحرّك · اسحب للنظر · Q/E أو مسافة للارتفاع · Shift للإسراع · Esc للخروج';
+whint.style.cssText='position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(11,31,58,.86);color:#fff;font:600 13px Tahoma;padding:8px 14px;border-radius:8px;display:none;z-index:50;pointer-events:none';
+document.body.appendChild(whint);
+const walkBtn=document.createElement('button');walkBtn.textContent='🚶 جولة مشي';walkBtn.className='step';
+function endWalk(){walk=false;whint.style.display='none';walkBtn.textContent='🚶 جولة مشي';setPreset(curView,true);}
+walkBtn.onclick=()=>{ if(walk){endWalk();return;}
+ if(tour){clearInterval(tour);tour=null;tourBtn.textContent='▶ جولة تلقائية';}
+ walk=true;wpos.copy(cam.position);if(wpos.y>8)wpos.y=1.7;
+ const d=target.clone().sub(cam.position);yaw=Math.atan2(d.z,d.x);pitch=Math.max(-0.6,Math.min(0.3,Math.atan2(d.y,Math.hypot(d.x,d.z))));
+ whint.style.display='block';walkBtn.textContent='✖ إنهاء المشي'; };
+ctrls.appendChild(walkBtn);
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true; if(k==='escape'&&walk)endWalk(); if(walk&&['w','a','s','d','q','e',' '].includes(k))e.preventDefault();});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+let last=performance.now();
+function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(walk){const sp=(keys['shift']?30:13)*dt,fx=Math.cos(yaw),fz=Math.sin(yaw);
+  if(keys['w']){wpos.x+=fx*sp;wpos.z+=fz*sp;} if(keys['s']){wpos.x-=fx*sp;wpos.z-=fz*sp;}
+  if(keys['a']){wpos.x+=fz*sp;wpos.z-=fx*sp;} if(keys['d']){wpos.x-=fz*sp;wpos.z+=fx*sp;}
+  if(keys['e']||keys[' '])wpos.y=Math.min(45,wpos.y+sp*0.8); if(keys['q'])wpos.y=Math.max(1.0,wpos.y-sp*0.8);
+  cam.position.copy(wpos);const cp=Math.cos(pitch);target.set(wpos.x+Math.cos(yaw)*cp,wpos.y+Math.sin(pitch),wpos.z+Math.sin(yaw)*cp);cam.lookAt(target);}
+ else if(gT<1){gT=Math.min(1,gT+dt/0.9);const e=ease(gT);cam.position.lerpVectors(gP0,gP1,e);target.lerpVectors(gT0,gT1,e);cam.lookAt(target);}
+ else if(!drag&&(Math.abs(orbVel.th)>1e-4||Math.abs(orbVel.ph)>1e-4)){const o=cam.position.clone().sub(target),r=o.length();let th=Math.atan2(o.z,o.x),ph=Math.acos(o.y/r);
+  th+=orbVel.th;ph=Math.max(0.05,Math.min(Math.PI/2.02,ph+orbVel.ph));orbVel.th*=0.9;orbVel.ph*=0.9;
+  cam.position.set(target.x+r*Math.sin(ph)*Math.cos(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(target);}
+ renderer.render(scene,cam);
+ octx.clearRect(0,0,innerWidth,innerHeight); if(labels.checked&&!walk)paintLabels(octx,innerWidth,innerHeight,LIVE);}
+const h=location.hash.match(/view=(\d+)/);setPreset(h?+h[1]:1,true);requestAnimationFrame(loop);
+window.__setPreset=setPreset;
+window.__look=(cx,cy,cz,tx,ty,tz,ro)=>{gT=1;roof.checked=!!ro;applyRoof();cam.position.set(cx,cy,cz);target.set(tx,ty,tz);cam.lookAt(target);};
+window.__exportView=function(i){const W=1920,H=1080;setPreset(i,true);
+ const os=new THREE.Vector2();renderer.getSize(os);renderer.setPixelRatio(1);renderer.setSize(W,H,false);
+ cam.aspect=W/H;cam.updateProjectionMatrix();renderer.render(scene,cam);
+ const cv2=document.createElement('canvas');cv2.width=W;cv2.height=H;const g=cv2.getContext('2d');
+ g.drawImage(renderer.domElement,0,0,W,H);
+ if(labels.checked)paintLabels(g,W,H,EXPO);
+ g.direction='rtl';g.textBaseline='alphabetic';
+ const P=PRE[i];g.textAlign='right';g.fillStyle='rgba(11,31,58,.92)';g.fillRect(W-770,24,746,96);
+ g.fillStyle='#f0b429';g.font='700 34px Tahoma';g.fillText(P.n,W-44,70);
+ g.fillStyle='#e9eef6';g.font='400 21px Tahoma';g.fillText(P.s,W-44,104);
+ g.textAlign='left';g.fillStyle='#f0b429';g.fillRect(28,28,300,40);g.fillStyle='#0b1f3a';g.font='700 20px Tahoma';g.fillText('تصور تجهيز مقترح — تقرير المتطلبات',40,55);
+ g.fillStyle='rgba(255,255,255,.92)';g.fillRect(0,H-46,W,46);g.fillStyle='#334';g.font='400 21px Tahoma';g.textAlign='right';
+ g.fillText('مخازن أبوهادي 155 — نموذج تصوّري وفق تقرير المتطلبات BRZ-WH-155-2026 — 2026-10-24',W-28,H-16);
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(os.x,os.y,false);cam.aspect=os.x/os.y;cam.updateProjectionMatrix();
+ return cv2.toDataURL('image/png');};
+// render the CURRENT camera (set via __look) at 1920×1080 — for a top-down zone map
+window.__exportNow=function(title,sub,showLabels){const W=1920,H=1080;
+ const os=new THREE.Vector2();renderer.getSize(os);renderer.setPixelRatio(1);renderer.setSize(W,H,false);
+ cam.aspect=W/H;cam.updateProjectionMatrix();renderer.render(scene,cam);
+ const cv2=document.createElement('canvas');cv2.width=W;cv2.height=H;const g=cv2.getContext('2d');
+ g.drawImage(renderer.domElement,0,0,W,H);
+ if(showLabels)paintLabels(g,W,H,EXPO);
+ g.direction='rtl';g.textBaseline='alphabetic';
+ if(title){g.textAlign='right';g.fillStyle='rgba(11,31,58,.92)';g.fillRect(W-770,24,746,96);
+  g.fillStyle='#f0b429';g.font='700 34px Tahoma';g.fillText(title,W-44,70);
+  g.fillStyle='#e9eef6';g.font='400 21px Tahoma';g.fillText(sub||'',W-44,104);}
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(os.x,os.y,false);cam.aspect=os.x/os.y;cam.updateProjectionMatrix();
+ return cv2.toDataURL('image/png');};
+</script></body></html>
