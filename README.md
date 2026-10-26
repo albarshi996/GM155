@@ -37,5 +37,19 @@ python build_site.py          # يولّد site_scene.js / .json / OBJ
 python -m http.server 8000    # ثم http://localhost:8000/
 ```
 
+## 🔄 تحديث الرابط الحيّ تلقائيًّا
+الرابط الحيّ يُعاد بناؤه تلقائيًّا عند أي دفعة (push) إلى `main`. هناك طريقتان:
+
+**أ) من جهازك بأمر واحد** — بعد تعديل `build_site.py`:
+```bash
+deploy.bat "وصف التعديل"
+```
+يولّد البيانات، يرفع كل شيء، ويُعاد بناء الرابط خلال ~دقيقة. *(إن أخرجتَ لقطات Blender جديدة شغّلها قبلها: `blender -b --python blender_build.py -- cycles all`.)*
+
+**ب) تلقائيًّا في السحابة (GitHub Actions)** — إن عدّلتَ `build_site.py` مباشرةً على GitHub (أو دفعته)، يعمل ملف
+[`.github/workflows/rebuild.yml`](.github/workflows/rebuild.yml) فيُعيد توليد `site_scene.js` ويدفعه، ثم يُعيد Pages البناء — **دون أي أدوات على جهازك**.
+
+> اللقطات (gallery) تحتاج Blender محليًّا؛ أما بيانات العارض `site_scene.js` فتُحدَّث تلقائيًّا (Python فقط).
+
 ---
 *نموذج تصوّري لأغراض العرض والتخطيط. برندزو — إدارة المستودعات.*

@@ -1,0 +1,38 @@
+name: Rebuild scene data & deploy
+
+# يعمل تلقائيًّا عند تعديل مولّد النموذج build_site.py (أو يدويًّا من تبويب Actions).
+on:
+  push:
+    branches: [main]
+    paths: ['build_site.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rebuild-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: توليد بيانات المشهد من build_site.py
+        run: python build_site.py
+      - name: حفظ ودفع التغييرات إن وُجدت
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site_scene.js
+          if git diff --cached --quiet; then
+            echo "لا تغييرات في بيانات المشهد — لا شيء لدفعه."
+          else
+            git commit -m "chore: regenerate scene data from build_site.py [skip ci]"
+            git push
+            echo "تم تحديث site_scene.js ودفعه؛ سيُعيد GitHub Pages البناء تلقائيًّا."
+          fi
