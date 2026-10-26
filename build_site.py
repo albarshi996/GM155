@@ -208,7 +208,7 @@ def dry_warehouse(w):
     side=(DY-al)/2-0.6
     rackband(yy+0.4,side); rackband(ay+al+0.2,side)
     if det:
-        box(f"{pre}_prop","proposed","label",x+LX/2,yy+1,6.5,8,6,0.1,fl,label="رفوف بالية مقترحة — المتطلبات (غير قائمة)")
+        box(f"{pre}_prop","proposed","label",x+LX/2,yy+1,6.5,8,6,0.1,fl,label="رفوف انتقائية مقترحة — المتطلبات (غير قائمة)")
         box(f"{pre}_wmo",pre,"building",x+1,yy+DY-7,2.4,10,6,0.3,(0.82,0.83,0.86),label="مكتب WMS")
         box(f"{pre}_wmg",pre,"glass",x+1,yy+DY-7,2.7,10,0.2,2.0,C["glass"])
         for k in range(3): box(f"{pre}_hb{k}",pre,"light",x+10+k*30,yy+DY/2,H-0.6,1.0,0.5,0.22,(1.0,0.96,0.72))
@@ -339,7 +339,7 @@ box("charging","support","building",186,25,0,9,8,3.5,C["wall2"],label="شحن ا
 for (px,py) in [(10,10),(356,10),(16,206),(352,172)]:   # perimeter CCTV at the real plot corners
     box(f"cctv_{int(px)}_{int(py)}","support","cctv",px,py,0,0.2,0.2,5,C["cctv"],system="05 CCTV")
 # requirements clarification callouts (anchored near the relevant zone)
-REQ=[("req_rack",300,120,8.5,"رفوف EN 15512 · حتى 10م · باليه 800×1200 · ممر ≥3.5م"),
+REQ=[("req_rack",300,120,7.2,"رفوف انتقائية ≤6.5م صافٍ ضمن مبنى 6.80م (أرضية-سقف) · 3–4 مستويات بالته · خلوص رشاشات ESFR · باليه 800×1200 · ممر ≥3.5م · EN 15512"),
      ("req_epoxy",230,66,0.3,"إيبوكسي 3مم · R12 · خطوط ملوّنة ISO 7010"),
      ("req_cctv",30,22,6.5,"CCTV ≥144TB · ANPR · غرفة مراقبة · EN 62676"),
      ("req_hvac",140,100,5.5,"تكييف VRF · تبريد +2..+8°م · تجميد ≤-18°م · AHRI 1100"),
@@ -547,11 +547,73 @@ box("ctx_neigh","site","building",428,118,0,30,44,6.0,(0.82,0.83,0.85),label="م
 box("ctx_nshaft","site","col",356,205,0,0.7,10,2.2,(0.80,0.15,0.13))                   # north marker (North = +Y)
 box("ctx_geolbl","site","label",356,216,3,1,1,0.1,(0.95,0.78,0.10),label="شمال ↑ N · الموقع 32.204°ش 20.219°شرقًا — بنغازي")
 
+# ---------------- MOVEMENT PATHS (conceptual circulation overlay · §09/§04) ----------------
+# Conceptual operating paths (state=concept) — NOT execution paint lines. Rendered in the viewer
+# only, as coloured tubes + arrowheads (not added to boxes or to the OBJ). Coords in metres (X=east,
+# Y=north); each path inherits colour/z/width from LAYERDEF so the legend and the drawing share one
+# colour source. Derived from the same road constants + warehouse docks already in this model.
+LAYERDEF={
+ "trucks":{"color":[0.122,0.435,0.922],"z":0.60,"width":0.70,"label":"الشاحنات"},
+ "fork":  {"color":[1.0,0.541,0.0],    "z":0.40,"width":0.45,"label":"الرافعات الشوكية"},
+ "ped":   {"color":[0.129,0.651,0.353],"z":0.22,"width":0.35,"label":"المشاة"},
+ "goods": {"color":[0.753,0.149,0.827],"z":1.10,"width":0.60,"label":"تدفّق البضائع"},
+}
+ZONES_META=[
+ {"z":"Z1","x":14,"y":146,"w":66,"d":56,"color":[0.85,0.22,0.22]},
+ {"z":"Z2","x":14,"y":20,"w":78,"d":104,"color":[0.12,0.70,0.86]},
+ {"z":"Z3","x":96,"y":62,"w":92,"d":78,"color":[0.95,0.72,0.12]},
+ {"z":"Z4","x":190,"y":60,"w":184,"d":130,"color":[0.20,0.68,0.35]},
+ {"z":"Z5","x":20,"y":18,"w":314,"d":30,"color":[0.22,0.38,0.82]},
+]
+def P(pid,layer,label,pts,drn=False,ae=0):
+    d={"id":pid,"layer":layer,"label":label,"state":"concept","dir":bool(drn),"pts":pts}
+    if drn: d["arrow_every"]=ae
+    return d
+PATHS=[
+ # الشاحنات (trucks)
+ P("trk_in","trucks","دخول الشاحنات من البوابة الجنوبية-الغربية",[[14,-2],[14,20],[16,30],[26,40],[50,48],[80,52],[96,54]],True,18),
+ P("trk_spine","trucks","الشريان الرئيسي (حلقة اتجاه واحد 12م)",[[96,54],[150,54],[205,54],[253,54],[320,54],[352,54]],True,22),
+ P("trk_c2","trucks","المحور الشمالي c2",[[253,54],[253,88],[253,116],[253,144],[253,188]],True,22),
+ P("trk_c1","trucks","المحور الشمالي c1",[[186,60],[186,88],[186,116],[186,144],[186,186]],True,22),
+ P("trk_r0","trucks","ممر عرضي (أرصفة E-7/E-6)",[[190,88],[374,88]]),
+ P("trk_r1","trucks","ممر عرضي (أرصفة E-1)",[[190,116],[374,116]]),
+ P("trk_r2","trucks","ممر عرضي (رصيف E-5)",[[190,144],[374,144]]),
+ P("trk_dock_E7","trucks","رجوع إلى رصيف E-7",[[313,54],[313,59],[313,62]],True,6),
+ P("trk_dock_E6","trucks","رجوع إلى رصيف E-6",[[253,88],[300,88],[313,90]],True,10),
+ P("trk_dock_E5","trucks","رجوع إلى رصيف E-5",[[253,144],[270,146],[279,148]],True,8),
+ P("trk_dock_E9","trucks","رجوع إلى رصيف E-9 (Z5 يواجه الشمال)",[[207,54],[207,49],[207,45]],True,6),
+ P("trk_dock_cold","trucks","رجوع الحاويات المبرّدة إلى أرصفة Z3",[[140,54],[140,60],[140,64]],True,6),
+ # الرافعات الشوكية (fork)
+ P("fk_E5","fork","رافعة E-5: رصيف ← الممر الأوسط ← الرفوف غربًا",[[279,148],[279,167.5],[218,167.5]],True,8),
+ P("fk_E5b","fork","رافعة E-5 شرقًا",[[279,167.5],[306,167.5]],True,8),
+ P("fk_E6","fork","رافعة E-6: رصيف ← الممر ← الرفوف",[[313,90],[313,102],[262,102]],True,10),
+ P("fk_E6b","fork","رافعة E-6 شرقًا",[[313,102],[364,102]],True,10),
+ P("fk_cold_feed","fork","رافعة الثلاجات: الرصيف ← الصالة ← الحلقة",[[140,67],[140,73],[140,80.8]],True,4),
+ P("fk_cold_ring","fork","حلقة رافعات الثلاجات (اتجاه واحد)",[[105,80.8],[175,80.8]],True,14),
+ P("fk_cold_room","fork","دخول غرفة تبريد (ممثّل × كل غرفة)",[[124,80.8],[124,85]],True,4),
+ # المشاة (ped)
+ P("ped_admin","ped","ممشى الإدارة Z1 ← العمليات",[[52,148],[55,130],[70,100],[88,70],[110,63],[131,63],[150,63],[150,54]],True,16),
+ P("ped_front_E4","ped","ممشى واجهة E-4/E-3/E-2",[[196,63.3],[246,63.3]]),
+ P("ped_front_E7","ped","ممشى واجهة E-7",[[258,63.3],[368,63.3]]),
+ P("ped_front_Z5a","ped","ممشى واجهة E-8",[[26,42.3],[136,42.3]]),
+ P("ped_front_Z5b","ped","ممشى واجهة E-9",[[150,42.3],[260,42.3]]),
+ P("ped_front_Z5c","ped","ممشى واجهة E-10",[[276,42.3],[326,42.3]]),
+ P("ped_cross150","ped","معبر مشاة محمي (§18)",[[150,63],[150,45]]),
+ P("ped_cross250","ped","معبر مشاة محمي (§18)",[[250,63],[250,45]]),
+ P("ped_cross320","ped","معبر مشاة محمي (§18)",[[320,63],[320,45]]),
+ # تدفّق البضائع (goods)
+ P("goods_1","goods","① استلام ← تخزين (GRN/Putaway §11)",[[131,62.5],[150,75],[230,92],[313,102]],True,14),
+ P("goods_2","goods","② تخزين ← تجهيز (Pick/Stage §12)",[[313,102],[300,82],[270,66],[256,62.5]],True,14),
+ P("goods_3","goods","③ تجهيز ← شحن (التحميل عند الصرف)",[[256,62.5],[240,56],[207,50],[207,45]],True,10),
+ P("goods_4","goods","④ شحن ← خروج (الشاحنة إلى البوابة)",[[207,45],[205,54],[150,54],[96,54],[40,46],[16,30],[14,4]],True,20),
+]
+
 # ---------------- WRITE ----------------
 meta={"project":"Abuhadi 155 — site plan (5 zones) + requirements (combined)","units":"metre",
       "axes":"X=east,Y=north,Z=up","note":"المواقع وفق المخطط الفعلي NAS-8155 (5 مناطق): Z1 الإدارة شمال-غرب · Z2 المواقف والبوابة غرب · Z3 الثلاجات · Z4 المستودعات الرئيسية وسط/شمال · Z5 المستودعات الجنوبية. القائم: أبواب أرضية + ممر 5.50م؛ الرفوف/الأرصفة مقترح. ارتفاعات: جاف 6.80م، مبرّد 5م.",
-      "warehouses":WH_LIST,"cold":{"x":CONFIG["cold"]["x"],"y":CONFIG["cold"]["y"],"w":CONFIG["cold"]["w"],"l":CONFIG["cold"]["l"]}}
-scene={"meta":meta,"palette":C,"boxes":boxes}
+      "warehouses":WH_LIST,"cold":{"x":CONFIG["cold"]["x"],"y":CONFIG["cold"]["y"],"w":CONFIG["cold"]["w"],"l":CONFIG["cold"]["l"]},
+      "plot":[list(p) for p in PLOT],"zones":ZONES_META}
+scene={"meta":meta,"palette":C,"boxes":boxes,"paths":PATHS,"pathLayers":LAYERDEF}
 json.dump(scene,open(os.path.join(HERE,"site_scene.json"),"w",encoding="utf-8"),ensure_ascii=False,separators=(",",":"))
 open(os.path.join(HERE,"site_scene.js"),"w",encoding="utf-8").write("window.SCENE="+json.dumps(scene,ensure_ascii=False,separators=(",",":"))+";")
 # OBJ

@@ -6,13 +6,13 @@
  :root{--navy:#0B2340;--amber:#f0b429}
  html,body{margin:0;height:100%;background:#aeb6bd;font-family:Tahoma,"Segoe UI",Arial;color:#0b1f3a;overflow:hidden}
  #c{display:block;width:100vw;height:100vh}
- #bar{position:fixed;top:10px;right:10px;background:rgba(11,31,58,.94);color:#fff;border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.35);max-width:min(94vw,540px);overflow:hidden}
- #barhead{display:flex;align-items:center;gap:6px;padding:7px 9px}
+ #bar{position:fixed;top:10px;right:10px;background:rgba(11,31,58,.94);color:#fff;border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.35);max-width:min(94vw,540px);overflow:hidden;z-index:35}
+ #barhead{display:flex;align-items:center;gap:6px;padding:7px 9px;flex-wrap:wrap}
  #barhead .ttl{font-weight:700;color:var(--amber);font-size:13.5px;margin-right:auto}
  #barhead button{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:8px;padding:5px 10px;font-size:13px;cursor:pointer;line-height:1}
  #barhead button:hover{background:#1c4a80}
  #barhead #menu{font-size:15px;padding:5px 11px}
- #barbody{padding:0 10px 10px}
+ #barbody{padding:0 10px 10px;max-height:calc(100vh - 220px);overflow:auto}
  #bar.collapsed #barbody{display:none}
  .hint{margin-top:8px;font-size:11px;color:#9fb3d0}
  .btns{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
@@ -22,13 +22,85 @@
  .btns select{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:7px;padding:5px 8px;font-size:12px;cursor:pointer}
  .btns .step{background:#214a7d}
  .tg{margin-top:8px;font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
- #title{position:fixed;bottom:12px;right:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:8px 14px;box-shadow:0 2px 10px rgba(0,0,0,.2);max-width:62vw}
+ #title{position:fixed;bottom:12px;right:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:8px 14px;box-shadow:0 2px 10px rgba(0,0,0,.2);max-width:62vw;z-index:20}
  #title h1{margin:0;font-size:16px}#title p{margin:3px 0 0;font-size:12px;color:#334}
- #legend{position:fixed;bottom:12px;left:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:7px 12px;font-size:11.5px;box-shadow:0 2px 10px rgba(0,0,0,.2);max-width:46vw}
+ #legend{position:fixed;bottom:186px;left:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:7px 12px;font-size:11.5px;box-shadow:0 2px 10px rgba(0,0,0,.2);max-width:46vw;z-index:25}
  #legend.collapsed .legbody{display:none}
  #legtog{cursor:pointer;font-weight:700;color:#0b2340;font-size:12px;user-select:none}
  .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-left:5px}
  .tag{display:inline-block;background:var(--amber);color:#0b1f3a;border-radius:5px;padding:1px 7px;font-weight:700;font-size:11px}
+ #infocard{position:fixed;top:10px;left:10px;width:min(90vw,340px);background:rgba(255,255,255,.975);border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.3);font-size:12.5px;display:none;overflow:hidden;z-index:40;border-top:4px solid var(--amber)}
+ #infocard .ic-h{background:var(--navy);color:#fff;padding:8px 11px;display:flex;align-items:center;gap:7px}
+ #infocard .ic-h b{font-size:14px;color:var(--amber);margin-right:auto;text-align:right;line-height:1.3}
+ #infocard .ic-h button{background:#13335c;border:0;color:#fff;border-radius:6px;cursor:pointer;padding:3px 8px;font-size:12px;flex:none}
+ #infocard .ic-h button:hover{background:#1c4a80}
+ #infocard .ic-b{padding:9px 12px;line-height:1.5;max-height:60vh;overflow:auto}
+ #infocard .ic-row{margin:5px 0;display:flex;gap:7px}
+ #infocard .ic-row .k{color:#5a6676;min-width:62px;flex:none;font-weight:700}
+ #infocard .ic-row .v{color:#1c2636}
+ #infocard .cls{display:inline-block;border-radius:5px;padding:1px 8px;font-weight:700;font-size:11px;color:#fff}
+ #infocard .note{margin-top:7px;font-size:11px;color:#7a5200;background:#fff6e0;border:1px solid #f0d890;border-radius:6px;padding:5px 8px}
+ /* ===== M5: minimap · search · layers · paths ===== */
+ #minimap{position:fixed;left:12px;bottom:12px;background:rgba(11,31,58,.92);border-radius:10px;padding:6px 6px 5px;box-shadow:0 6px 22px rgba(0,0,0,.35);z-index:30}
+ #minimap .mmh{color:#cdd8e6;font-size:10px;display:flex;align-items:center;gap:5px;margin:0 2px 4px}
+ #minimap .mmh b{color:var(--amber)}
+ #mm{display:block;width:200px;height:auto;border-radius:6px;cursor:crosshair;background:rgba(10,24,44,.6)}
+ #q{background:#0c2744;color:#fff;border:1px solid #2a4f7e;border-radius:8px;padding:5px 9px;font:inherit;font-size:12.5px;width:148px;outline:none}
+ #q:focus{border-color:var(--amber)} #q::placeholder{color:#8ba6c9}
+ .sresults{display:none;margin:6px 0 2px;max-height:38vh;overflow:auto}
+ .sresults.on{display:block}
+ .sres{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:7px;cursor:pointer;font-size:12px}
+ .sres:hover,.sres.sel{background:#1c4a80}
+ .sres .cbar{width:4px;align-self:stretch;min-height:16px;border-radius:3px;flex:none}
+ .sres .nm{color:#eaf1fb;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+ .sres .sfx{color:#9fb3d0;font-size:10px;flex:none}
+ .snone{padding:6px 8px;color:#9fb3d0;font-size:11.5px}
+ .shead{margin-top:10px;padding-top:7px;border-top:1px solid #2a4f7e;font-weight:700;color:var(--amber);font-size:12px}
+ .sub{margin-top:7px;font-size:10.5px;color:#9fb3d0}
+ .lrow{display:flex;align-items:center;gap:7px;font-size:12px;margin-top:4px;color:#dce7f5;cursor:pointer}
+ .lrow input{margin:0;flex:none} .lrow .sw{margin:0}
+ .lrow .cnt{color:#8ba6c9;font-size:10px;margin-right:auto}
+ .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+ .chip{display:flex;align-items:center;gap:4px;font-size:10.5px;color:#dce7f5;background:#0c2744;border:1px solid #2a4f7e;border-radius:6px;padding:2px 6px;cursor:pointer;user-select:none}
+ .chip.off{opacity:.4;text-decoration:line-through}
+ .chip .sw{width:9px;height:9px;margin:0}
+ .qbtn{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+ .qbtn button{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:7px;padding:4px 7px;font-size:11px;cursor:pointer}
+ .qbtn button:hover{background:#1c4a80}
+ @media(max-width:720px){#mm{width:150px}#minimap{padding:5px}#q{width:112px}}
+ /* ===== M6: phases · items(163) · tour caption · nav help ===== */
+ .seg{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+ .seg button{flex:1;min-width:58px;background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:7px;padding:5px 6px;font-size:11.5px;cursor:pointer}
+ .seg button:hover{background:#1c4a80}
+ .seg button.on{background:var(--amber);color:#0b2340;border-color:var(--amber);font-weight:700}
+ .phnote{margin-top:5px;font-size:10.5px;color:#9fb3d0;line-height:1.5}
+ #itemflt{width:100%;box-sizing:border-box;background:#0c2744;color:#fff;border:1px solid #2a4f7e;border-radius:8px;padding:5px 9px;font:inherit;font-size:12px;outline:none;margin-top:6px}
+ #itemflt:focus{border-color:var(--amber)}
+ .chap{margin-top:5px;border:1px solid #244066;border-radius:8px;overflow:hidden}
+ .chap>.ch-h{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#10294a;cursor:pointer;font-size:12px;color:#eaf1fb}
+ .chap>.ch-h .ci{color:var(--amber);font-weight:700}
+ .chap>.ch-h .cc{color:#8ba6c9;font-size:10px;margin-right:auto}
+ .chap .ch-b{display:none;padding:2px 6px 6px}
+ .chap.open .ch-b{display:block}
+ .chap.open>.ch-h .ar{transform:rotate(90deg)}
+ .ch-h .ar{display:inline-block;transition:transform .15s;color:#8ba6c9}
+ .irow{display:flex;align-items:center;gap:6px;padding:4px 5px;border-radius:6px;cursor:pointer;font-size:11.5px;color:#dce7f5}
+ .irow:hover{background:#1c4a80}
+ .irow .ic{color:#9fb3d0;font-size:10px;flex:none;min-width:42px}
+ .irow .it{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+ .pch{flex:none;border-radius:4px;padding:0 5px;font-size:9.5px;font-weight:700}
+ .pch.p1{background:#2fa757;color:#fff} .pch.p2{background:#5b9bd5;color:#0b2340} .pch.p0{background:#e8781f;color:#fff}
+ #tourcap{position:fixed;left:50%;bottom:168px;transform:translateX(-50%);width:min(92vw,560px);box-sizing:border-box;background:rgba(11,31,58,.93);color:#fff;border-radius:11px;padding:9px 15px 11px;box-shadow:0 6px 22px rgba(0,0,0,.4);z-index:45;display:none;border-top:3px solid var(--amber);pointer-events:none}
+ @media(max-width:720px){#tourcap{left:12px;right:12px;width:auto;transform:none;bottom:150px}}
+ #tourcap .tc-s{color:var(--amber);font-weight:700;font-size:11px;margin-bottom:3px}
+ #tourcap .tc-t{font-size:13px;line-height:1.5}
+ #tourcap .tc-p{height:3px;border-radius:3px;background:rgba(255,255,255,.2);margin-top:7px;overflow:hidden}
+ #tourcap .tc-f{height:100%;width:0;background:var(--amber);border-radius:3px}
+ #navhelp{position:fixed;left:12px;top:50%;transform:translateY(-50%);width:min(88vw,264px);background:rgba(11,31,58,.96);color:#eaf1fb;border-radius:12px;padding:12px 14px;box-shadow:0 8px 26px rgba(0,0,0,.4);z-index:55;display:none;font-size:12px;line-height:1.85}
+ #navhelp h3{margin:0 0 7px;color:var(--amber);font-size:13px}
+ #navhelp kbd{background:#13335c;border:1px solid #2a4f7e;border-radius:5px;padding:1px 6px;font:inherit;font-size:11px}
+ #navhelp .nh-x{position:absolute;top:8px;left:10px;cursor:pointer;color:#9fb3d0}
+ @media(max-width:760px){#infocard{top:auto;bottom:10px;left:10px;right:10px;width:auto}}
 </style></head>
 <body>
 <canvas id="c"></canvas>
@@ -38,22 +110,37 @@
   <button id="pv" title="السابق">‹</button>
   <button id="nx" title="التالي">›</button>
   <button id="lbl" title="كثافة الأسماء">الأسماء: مختصر</button>
+  <input id="q" placeholder="بحث… E‑5 · 04 · اسم" title="ابحث باسم عربي أو رمز مخزن (E‑5 · CS‑10) أو محور (04)" autocomplete="off">
+  <button id="help" title="لوحة التحكّم والمفاتيح">؟</button>
   <span class="ttl">أبوهادي 155</span>
  </div>
  <div id="barbody">
+  <div class="sresults" id="sresults"></div>
   <div class="hint">المشاهد (16):</div>
   <div class="btns" id="views"></div>
   <div class="hint">دخول مخزن:</div>
   <div class="btns" id="whbtns"></div>
   <div class="btns" id="ctrls"></div>
-  <div class="tg">
-   <label><input type="checkbox" id="roof"> السقف</label>
-   <label><input type="checkbox" id="proposed" checked> المقترح (الرامب/الرفوف)</label>
-   <input type="checkbox" id="labels" checked style="display:none">
-  </div>
+  <div class="shead">مراحل التنفيذ (تسلسل تصوّري)</div>
+  <div class="seg" id="phaseseg"></div>
+  <div class="phnote" id="phnote">المعروض: كل المراحل — بنية ← تجهيز ← تشغيل (تسلسل تصوّري، ليس جدولًا معتمدًا).</div>
+  <div class="shead">الطبقات — إظهار/إخفاء</div>
+  <div id="layrows"></div>
+  <label class="lrow"><input type="checkbox" id="proposed" checked><span class="sw" style="background:#e8781f"></span>التجهيزات المقترحة<span class="cnt" id="cnt_proposed"></span></label>
+  <label class="lrow"><input type="checkbox" id="roof"><span class="sw" style="background:#5b7da8"></span>الأسقف</label>
+  <input type="checkbox" id="labels" checked style="display:none">
+  <div class="sub">حسب حالة السجل (تقاطع مع الطبقات):</div>
+  <div class="chips" id="statuschips"></div>
+  <div class="qbtn" id="quickbtns"></div>
+  <div class="shead">مسارات الحركة</div>
+  <div id="pathrows"></div>
+  <div class="shead">البنود التنفيذية (163)</div>
+  <input id="itemflt" placeholder="تصفية البنود… اسم أو رمز (OP‑4)" autocomplete="off">
+  <div id="chaps"></div>
  </div>
 </div>
 <div id="title"><h1>—</h1><p>—</p></div>
+<div id="infocard"><div class="ic-h"><button id="icf" title="تركيز الكاميرا على العنصر">🔍 تركيز</button><button id="icx" title="إغلاق">✕</button><b id="icttl">—</b></div><div class="ic-b" id="icbody"></div></div>
 <div id="legend" class="collapsed">
  <div id="legtog">▸ مفتاح الألوان</div>
  <div class="legbody">
@@ -66,8 +153,21 @@
  <div style="margin-top:4px;color:#556">تصور مقترح وفق تقرير المتطلبات — ليس مخطط تنفيذ إنشائي</div>
  </div>
 </div>
+<div id="minimap"><div class="mmh">🗺️ <b>الخريطة</b> · انقر للانتقال</div><canvas id="mm"></canvas></div>
+<div id="tourcap"><div class="tc-s" id="tcs">—</div><div class="tc-t" id="tct">—</div><div class="tc-p"><div class="tc-f" id="tcf"></div></div></div>
+<div id="navhelp"><span class="nh-x" id="navx">✕</span><h3>التحكّم والتنقّل</h3>
+ <div><kbd>W A S D</kbd> تنقّل أفقي فوق الموقع</div>
+ <div><kbd>الأسهم</kbd> تدوير زاوية النظر</div>
+ <div><kbd>نقر مزدوج</kbd> الطيران إلى المكان المنقور</div>
+ <div><kbd>نقرة واحدة</kbd> تحديد عنصر وإظهار بطاقته</div>
+ <div><kbd>عجلة الماوس</kbd> / <kbd>+ −</kbd> تقريب وتبعيد</div>
+ <div><kbd>Shift</kbd>+<kbd>→ ←</kbd> المحطة التالية/السابقة</div>
+ <div>🗺️ انقر الخريطة المصغّرة للانتقال الفوري</div>
+ <div>🚶 «جولة مشي» لمنظور الشخص (WASD · Q/E للارتفاع)</div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>document.write('<script src="site_scene.js?v='+Date.now()+'"><\/script>')</script>
+<script>document.write('<script src="items155.js?v='+Date.now()+'"><\/script>')</script>
 <script>
 const SCENE=window.SCENE, B=SCENE.boxes;
 const toT=(x,y,z)=>new THREE.Vector3(x,z,y);
@@ -91,6 +191,33 @@ let sun2=new THREE.DirectionalLight(0xdce8ff,.28); sun2.position.set(-180,220,-1
 const CAST=new Set(['wall','roof','roof2','building','cold','col','canopy','truck','car','cylinder','fence','gate','gen','tank','office','guard','dockdoor','person','fork','tree']);
 
 const roofs=[],centers={},labelled=[],propMeshes=[];
+// ===== M5: layers / status registries (visibility grouping) =====
+function layerOf(b){const id=b.id||'',g=b.group||'';
+ if(id.indexOf('ctx_')===0||b.type==='sand'||id==='desert')return'context';
+ if(g==='proposed')return'proposed';
+ if(g==='zone'||g==='requirements')return'annot';
+ if(g==='cold')return'cold';
+ if(g==='admin')return'z1';
+ if(g==='support')return'support';
+ if(g==='ops')return'ops';
+ if(g.indexOf('WH')===0||g==='wall')return'structure';
+ return'site';}
+function classKey(b){if(b.state==='proposed')return'proposed';
+ const id=b.id||'',g=b.group||'';
+ if(id.indexOf('ctx_')===0||b.type==='sand')return'context';
+ if(g==='admin')return'assume';
+ if((g.indexOf('WH')===0||g==='cold'||g==='site')&&['wall','floor','roof','roof2','door','building','office','cold','zonefloor','col','glass','road','fence','apron','concrete'].includes(b.type))return'built';
+ return'concept';}
+const LAYDEF=[['structure','الهيكل القائم — المخازن','#2fa757'],['cold','سلسلة التبريد E‑F','#45b8c8'],['z1','الإدارة والخدمات Z1','#b48ad6'],['support','المنظومات المساندة','#5b9bd5'],['ops','الحركة والنشاط','#3fa85a'],['site','الموقع — طرق/أسوار','#8893a0'],['annot','المناطق والمتطلبات','#d6a53a'],['context','السياق المحيط','#b9c6d6']];
+const STATDEF=[['built','قائم','#2fa757'],['proposed','مقترح','#e8781f'],['assume','افتراض','#b48ad6'],['context','سياق','#8893a0'],['concept','تصوّري','#5b9bd5']];
+const layerEnabled={proposed:true}; LAYDEF.forEach(l=>layerEnabled[l[0]]=true);
+const statusEnabled={built:true,proposed:true,assume:true,context:true,concept:true};
+let zoneFloorsOn=true;
+const layerMeshes={}, meshById={};
+// ===== M6: مراحل التنفيذ (بنية←تجهيز←تشغيل) — تُحسب من الطبقة/الحالة =====
+function phaseOf(b,lay){lay=lay||layerOf(b); if(lay==='ops')return 3; if(b.state==='proposed'||lay==='support'||lay==='annot')return 2; return 1;}
+function phaseOfLabel(L){if(L.lay==='ops')return 3; if(L.prop||L.lay==='support'||L.lay==='annot')return 2; return 1;}
+let phaseShown=0; // 0=الكل · 1 بنية · 2 +تجهيز · 3 +تشغيل
 for(const b of B){
   const [sx,sy,sz]=b.dimensions_m,[px,py,pz]=b.position_m,col=b.color;
   const cx=px+sx/2,cy=py+sy/2,cz=pz+sz/2;
@@ -110,17 +237,19 @@ for(const b of B){
   }
   if(b.rotation){ const ry=-b.rotation*Math.PI/180; m.rotation.y=ry; if(m.userData.edge) m.userData.edge.rotation.y=ry; }
   m.castShadow=CAST.has(b.type); m.receiveShadow=!light;
-  m.userData.b=b; scene.add(m); centers[b.id]=toT(cx,cy,cz);
+  m.userData.b=b; m.userData.lay=layerOf(b); m.userData.cls=classKey(b);
+  (layerMeshes[m.userData.lay]||(layerMeshes[m.userData.lay]=[])).push(m); meshById[b.id]=m;
+  scene.add(m); centers[b.id]=toT(cx,cy,cz);
   if(b.type==='roof'){roofs.push(m); if(m.userData.edge)roofs.push(m.userData.edge);}
   if(b.state==='proposed'){propMeshes.push(m); if(m.userData.edge)propMeshes.push(m.userData.edge);}
-  if(b.label) labelled.push({id:b.id,txt:b.label,p:toT(cx,cy,cz+ (sz>5?sz/2:0)),pri:Math.max(sx,sy,sz),prop:b.state==='proposed',grp:b.group||''});
+  if(b.label) labelled.push({id:b.id,txt:b.label,p:toT(cx,cy,cz+ (sz>5?sz/2:0)),pri:Math.max(sx,sy,sz),prop:b.state==='proposed',grp:b.group||'',lay:layerOf(b),cls:classKey(b)});
 }
 // labels: drawn on a 2D overlay canvas (anchor dot + leader line + clean chip) — one painter for live & export
 // category colour-coding (best practice: labels parse by type at a glance)
 const CATCOL={req:'#f0b429',cold:'#45b8c8',ops:'#3fa85a',support:'#8893a0',admin:'#b48ad6',zone:'#5b9bd5',info:'#b9c6d6'};
 const CATNAME={req:'مقترح/متطلب',cold:'التبريد',ops:'العمليات',support:'المساندة',admin:'الإدارة Z1',zone:'المناطق',info:'الموقع'};
 function labCat(o){ if(o.prop)return'req'; const g=o.grp; if(g==='cold')return'cold'; if(g==='ops')return'ops'; if(g==='support')return'support'; if(g==='admin')return'admin'; if(g==='zone')return'zone'; return'info'; }
-const LABELS=labelled.map(o=>({p:o.p,txt:o.txt,pri:o.pri,prop:o.prop,col:CATCOL[labCat(o)]}));
+const LABELS=labelled.map(o=>({p:o.p,txt:o.txt,pri:o.pri,prop:o.prop,col:CATCOL[labCat(o)],lay:o.lay,cls:o.cls}));
 const ov=document.createElement('canvas');ov.id='ov';
 ov.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none';document.body.appendChild(ov);
 const octx=ov.getContext('2d');
@@ -131,7 +260,7 @@ function paintLabels(g,W,H,o){
  g.save();g.textAlign='center';g.direction='rtl';g.textBaseline='middle';
  const camDist=cam.position.distanceTo(target), maxD=Math.max(o.minD,camDist*o.kD);
  let cands=[];
- for(const L of LABELS){ if(L.prop&&!proposed.checked)continue;
+ for(const L of LABELS){ if(!layerEnabled[L.lay]||!statusEnabled[L.cls])continue; if(L.prop&&!proposed.checked)continue; if(phaseShown&&phaseOfLabel(L)>phaseShown)continue;
   const v=L.p.clone().project(cam); if(v.z>1)continue;
   const d=cam.position.distanceTo(L.p); if(d>maxD)continue;
   const x=(v.x*.5+.5)*W, y=(-v.y*.5+.5)*H; if(x<12||x>W-12||y<18||y>H-18)continue;
@@ -180,7 +309,34 @@ const PRE={
  15:{n:'15 الرامب الخارجي المقترح + المتطلبات',s:'منصة 1.20م · Dock Leveler · باب 4×4.5م — فكرة على المخازن',cam:[300,16,30],tgt:[314,3,64],roof:true},
  16:{n:'16 Z1 — الواجهة الإدارية والخدمية',s:'إداري بطابقين · نوافذ شريطية ومظلة مدخل · سواري الأعلام',cam:[46,18,116],tgt:[42,4,158],roof:false},
 };
-function applyRoof(){const on=roof.checked;roofs.forEach(m=>m.visible=on);}
+// ======== M6: سرد الجولة المروية — نص لكل محطة ========
+const TOURNOTE={
+ 1:'نبدأ بنظرة شاملة على الموقع (~7 هكتار) بمناطقه الخمس: الإدارة والخدمات، المواقف والبوابة، الثلاجات، المستودعات الرئيسية، والمستودعات الجنوبية.',
+ 2:'المدخل الجنوبي الغربي: بوابة أمنية بميزان 60 طنًّا و‌ANPR، وساحة انتظار للشاحنات بطول 73.46م تنظّم الدخول قبل الأرصفة.',
+ 3:'واجهات المخازن بأبوابها الأرضية القائمة على المخطط، مع طرق خدمة محيطة — هذا هو الوضع القائم قبل تجهيز الأرصفة المقترحة.',
+ 4:'ندخل أكبر مخزن E‑5 عبر ممرّه الداخلي 5.50م بين صفّي الرفوف — الممر والأبواب قائمة، والرفوف تصوّر مقترح.',
+ 5:'E‑5 بمساحة 3,500م² (غذائي جاف، فريق 7–9) أكبر وحدة؛ لاحظ الرفوف بثلاثة مستويات ضمن ارتفاع 6.80م بعد تصحيح الارتفاع.',
+ 6:'العمود الطويل في Z4: المخازن E‑1 وE‑6 وE‑7 (110×20م) مكدّسة مع طرق وصول بين الصفوف لحركة الرافعات والشاحنات.',
+ 7:'المنظومات المساندة: خزان الحريق والمضخة، المولدات، الغرف الكهربائية، الشبكات والتكييف — تمثيل للمحاور الهندسية الـ22.',
+ 8:'تدفّق العمليات بين المناطق: البوابة ← الاستلام والفرز ← التخزين ← الصرف والشحن، وهو العمود الفقري لمنطق الموقع.',
+ 9:'العمود الصغير في Z4 (E‑2 وE‑3 وE‑4) يستوعب المشروبات والملابس والتغليف — بترميز لوني لعائلات البضاعة على الواجهات.',
+ 10:'داخل مخزن طويل E‑1: الممر الداخلي 5.50م والأبواب الأرضية والرفوف على الجانبين — نموذج يتكرّر في بقية المخازن الطويلة.',
+ 11:'مقارنة القائم بالمقترح: الأبواب الأرضية والممر قائمان على المخطط، بينما الرفوف وأرصفة التحميل تجهيز مقترح يحتاج اعتمادًا.',
+ 12:'منظور مجسّم لـ E‑5 يُظهر التفاصيل الداخلية: الأعمدة، الإضاءة العلوية، ومكتب إدارة المخزون WMS.',
+ 13:'المجمّع المبرّد E‑F: 12 غرفة تبريد/تجميد و‌8 أرصفة وممر رافعات، بسعة تقارب 4,632 موقع طبلية.',
+ 14:'صالة الأرصفة المبرّدة بأبوابها الثمانية ومسوّيات الرصيف، مع حاويات مبرّدة 40 قدمًا — نقطة دخول سلسلة التبريد.',
+ 15:'الرامب الخارجي المقترح: منصّة 1.20م، باب سريع 4×4.5م، ومسوّي رصيف ±300مم — فكرة تُعرض على المخازن، لا تنفيذًا معتمدًا.',
+ 16:'الواجهة الإدارية والخدمية في Z1: مبنى إداري بطابقين، نوافذ شريطية ومظلة مدخل، وسواري الأعلام — عنقود تصوّري يحتاج مراجعة.'};
+// single source of truth for visibility: layer AND status AND roof AND zonefloor
+function applyVis(){const rf=roof.checked;let selGone=false;
+ for(const key in layerMeshes){const on=layerEnabled[key];
+  for(const m of layerMeshes[key]){const b=m.userData.b;
+   const vis=on&&statusEnabled[m.userData.cls]&&(phaseShown===0||phaseOf(b,m.userData.lay)<=phaseShown)&&(rf||b.type!=='roof')&&(zoneFloorsOn||b.type!=='zonefloor');
+   m.visible=vis; if(m.userData.edge)m.userData.edge.visible=vis;
+   if(m===selMesh&&!vis)selGone=true;}}
+ if(typeof pathsGroup!=='undefined'&&pathsGroup)pathsGroup.visible=(phaseShown===0||phaseShown>=3);
+ if(selGone&&typeof clearSel==='function')clearSel();}
+function applyRoof(){applyVis();}
 let target=new THREE.Vector3(150,0,110);
 // smooth camera glide (eased) — removes the jarring instant jumps
 let gP0,gT0,gP1,gT1,gT=1;
@@ -190,12 +346,12 @@ function setTitle(n,s){title.querySelector('h1').textContent=n;title.querySelect
 let curView=1;
 function setPreset(i,instant){const p=PRE[i];if(!p)return;curView=+i;roof.checked=p.roof;applyRoof();
  if(instant)setCam(p.cam,p.tgt);else glide(p.cam,p.tgt);
- setTitle(p.n,p.s);location.hash='view='+i;highlight();}
+ setTitle(p.n,p.s);location.hash='view='+i;highlight(); if(tour&&typeof showTourCap==='function')showTourCap(i);}
 function highlight(){[...views.children].forEach(b=>b.classList.toggle('on',+b.dataset.i===curView));}
 // view buttons — named, so navigation reads at a glance
 const SH={1:'عام',2:'البوابة',3:'الواجهات',4:'داخل E‑5',5:'E‑5',6:'الصف الطويل',7:'المساندة',8:'التدفّق',9:'العائلات',10:'داخل E‑1',11:'قائم/مقترح',12:'مقطع E‑5',13:'المبرّد',14:'الأرصفة',15:'الرامب',16:'الإداري'};
 Object.keys(PRE).forEach(i=>{const b=document.createElement('button');b.dataset.i=i;b.textContent=i+'· '+(SH[i]||'');b.title=PRE[i].n;b.onclick=()=>setPreset(i);views.appendChild(b);});
-roof.onchange=applyRoof; proposed.onchange=()=>propMeshes.forEach(m=>m.visible=proposed.checked);
+roof.onchange=applyVis; proposed.onchange=()=>{layerEnabled.proposed=proposed.checked;applyVis();};
 function step(d){let n=curView+d; if(n<1)n=16; if(n>16)n=1; setPreset(n);}
 // per-warehouse entry (dropdown) — looks down the aisle (long axis) from the west door
 const WH=(SCENE.meta.warehouses||[]), COLD=SCENE.meta.cold;
@@ -212,22 +368,32 @@ function zoom(f){const o=cam.position.clone().sub(target);o.multiplyScalar(f);if
 function topView(){roof.checked=true;applyRoof();glide([188,340,118],[188,0,118]);setTitle('منظر علوي','المسقط العلوي للموقع · المناطق الخمس');}
 [['‹ السابق',()=>step(-1),'step'],['التالي ›',()=>step(1),'step'],['＋ تقريب',()=>zoom(0.8)],['－ تبعيد',()=>zoom(1.25)],['علوي',topView],['إعادة',()=>setPreset(1)]].forEach(([t,fn,cl])=>{const b=document.createElement('button');b.textContent=t;if(cl)b.className=cl;b.onclick=fn;ctrls.appendChild(b);});
 // keyboard: Shift+←/→ step tour · ←/→/↑/↓ orbit · +/- zoom
-addEventListener('keydown',e=>{ if(e.shiftKey&&e.key==='ArrowLeft'){step(-1);return;} if(e.shiftKey&&e.key==='ArrowRight'){step(1);return;}
+addEventListener('keydown',e=>{ if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable))return;
+ if(e.shiftKey&&e.key==='ArrowLeft'){step(-1);return;} if(e.shiftKey&&e.key==='ArrowRight'){step(1);return;}
  const o=cam.position.clone().sub(target),r=o.length();let th=Math.atan2(o.z,o.x),ph=Math.acos(o.y/r);
  if(e.key==='ArrowLeft')th-=0.12; else if(e.key==='ArrowRight')th+=0.12; else if(e.key==='ArrowUp')ph=Math.max(0.05,ph-0.08); else if(e.key==='ArrowDown')ph=Math.min(Math.PI/2.02,ph+0.08);
  else if(e.key==='+'||e.key==='=')return zoom(0.85); else if(e.key==='-')return zoom(1.18); else return;
  gT=1;cam.position.set(target.x+r*Math.sin(ph)*Math.cos(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(target);});
 // orbit (drag/wheel cancel any active glide)
 let drag=false,lx,ly;const cvm=renderer.domElement;
-cvm.addEventListener('mousedown',e=>{drag=true;gT=1;lx=e.clientX;ly=e.clientY;});
-addEventListener('mouseup',()=>drag=false);
+let _dx=0,_dy=0,_onc=false;
+addEventListener('mousedown',()=>{_onc=false;},true);   // capture: reset; cvm handler below sets true only on canvas
+cvm.addEventListener('mousedown',e=>{drag=true;gT=1;lx=e.clientX;ly=e.clientY;_dx=e.clientX;_dy=e.clientY;_onc=true;});
+addEventListener('mouseup',e=>{const moved=Math.hypot(e.clientX-_dx,e.clientY-_dy);drag=false;if(_onc&&moved<5&&!walk)selectAt(e.clientX,e.clientY);});
+cvm.addEventListener('touchstart',e=>{if(e.touches.length===1){_dx=e.touches[0].clientX;_dy=e.touches[0].clientY;_onc=true;}},{passive:true});
+cvm.addEventListener('touchend',e=>{const t=e.changedTouches[0];if(t&&_onc&&Math.hypot(t.clientX-_dx,t.clientY-_dy)<10&&!walk)selectAt(t.clientX,t.clientY);},{passive:true});
 addEventListener('mousemove',e=>{if(!drag)return;const dx=(e.clientX-lx)/160,dy=(e.clientY-ly)/160;lx=e.clientX;ly=e.clientY;
  if(walk){yaw+=dx;pitch=Math.max(-1.2,Math.min(1.2,pitch-dy));return;}
  const o=cam.position.clone().sub(target),r=o.length();let th=Math.atan2(o.z,o.x),ph=Math.acos(o.y/r);
  th-=dx;ph=Math.max(0.05,Math.min(Math.PI/2.02,ph-dy));orbVel.th=-dx;orbVel.ph=-dy;
  cam.position.set(target.x+r*Math.sin(ph)*Math.cos(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(target);});
 cvm.addEventListener('wheel',e=>{e.preventDefault();gT=1;const o=cam.position.clone().sub(target);o.multiplyScalar(e.deltaY>0?1.08:0.92);cam.position.copy(target.clone().add(o));cam.lookAt(target);},{passive:false});
-function resize(){renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();sizeOv();}
+// نقر مزدوج على المشهد → الطيران إلى المكان المنقور (اضغط بالماوس تصل للمكان)
+cvm.addEventListener('dblclick',e=>{if(walk)return;ndc.x=(e.clientX/innerWidth)*2-1;ndc.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(ndc,cam);
+ const picks=scene.children.filter(o=>o.isMesh&&o.visible);const hits=ray.intersectObjects(picks,false);if(!hits.length)return;
+ const p=hits[0].point;if(tour)stopTour();const o=cam.position.clone().sub(target),d=Math.max(16,Math.min(140,o.length()*0.55)),dir=o.clone().normalize();
+ glide([p.x+dir.x*d,Math.max(p.y+7,p.y+d*0.55),p.z+dir.z*d],[p.x,p.y,p.z]);});
+function resize(){renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();sizeOv();if(window.__mm)window.__mm();}
 onresize=resize;resize();
 const LIVE={font:'600 12px Tahoma',pad:8,chipH:21,off:13,gap:5,maxN:5,dotR:3,line:1.2,rad:5,ty:1,minD:60,kD:0.95,maxLen:30};
 const EXPO={font:'600 21px Tahoma',pad:12,chipH:33,off:30,gap:8,maxN:12,dotR:4.5,line:1.9,rad:7,ty:1,minD:72,kD:0.98};
@@ -238,30 +404,306 @@ menuBtn.onclick=()=>bar.classList.toggle('collapsed');
 document.getElementById('pv').onclick=()=>step(-1);
 document.getElementById('nx').onclick=()=>step(1);
 legtog.onclick=()=>{legend.classList.toggle('collapsed');legtog.textContent=(legend.classList.contains('collapsed')?'▸':'▾')+' مفتاح الألوان';};
+const navhelp=document.getElementById('navhelp'),helpBtn=document.getElementById('help');
+if(helpBtn)helpBtn.onclick=()=>{navhelp.style.display=(navhelp.style.display==='block'?'none':'block');};
+const navxBtn=document.getElementById('navx');if(navxBtn)navxBtn.onclick=()=>navhelp.style.display='none';
 const DENS=[{n:'بلا',max:0},{n:'مختصر',max:5},{n:'الكل',max:13}]; let dens=1;
 function applyDens(){labels.checked=DENS[dens].max>0;LIVE.maxN=DENS[dens].max||5;lblBtn.textContent='الأسماء: '+DENS[dens].n;if(!labels.checked)octx.clearRect(0,0,innerWidth,innerHeight);}
 lblBtn.onclick=()=>{dens=(dens+1)%DENS.length;applyDens();};
 applyDens();
 // ---- UX: guided auto-tour · first-person walk mode · orbit inertia ----
-let tour=null;
-const tourBtn=document.createElement('button');tourBtn.textContent='▶ جولة تلقائية';tourBtn.className='step';
-tourBtn.onclick=()=>{ if(tour){clearInterval(tour);tour=null;tourBtn.textContent='▶ جولة تلقائية';}
- else{ if(walk)endWalk(); tourBtn.textContent='⏸ إيقاف الجولة'; step(1); tour=setInterval(()=>step(1),6500);} };
+let tour=null,tourDur=7000,tcapStart=0;
+const tcap=document.getElementById('tourcap'),tcs=document.getElementById('tcs'),tct=document.getElementById('tct'),tcf=document.getElementById('tcf');
+function showTourCap(i){const note=(typeof TOURNOTE!=='undefined'&&TOURNOTE[i])?TOURNOTE[i]:(PRE[i]?PRE[i].s:'');tcs.textContent='المحطة '+i+'/16 · '+(PRE[i]?PRE[i].n:'');tct.textContent=note;tcap.style.display='block';const _t=document.getElementById('title');if(_t)_t.style.display='none';tcapStart=performance.now();}
+function hideTourCap(){tcap.style.display='none';const _t=document.getElementById('title');if(_t)_t.style.display='';}
+const tourBtn=document.createElement('button');tourBtn.textContent='▶ جولة مروية';tourBtn.className='step';
+function stopTour(){if(tour){clearInterval(tour);tour=null;}tourBtn.textContent='▶ جولة مروية';hideTourCap();}
+tourBtn.onclick=()=>{ if(tour){stopTour();}
+ else{ if(walk)endWalk(); phaseShown=0; if(typeof syncPhaseUI==='function')syncPhaseUI(); applyVis(); tourBtn.textContent='⏸ إيقاف الجولة'; step(1); showTourCap(curView); tour=setInterval(()=>step(1),tourDur);} };
 ctrls.appendChild(tourBtn);
 let walk=false,yaw=0,pitch=0;const keys={};const wpos=new THREE.Vector3();const orbVel={th:0,ph:0};
 const whint=document.createElement('div');whint.textContent='WASD للتحرّك · اسحب للنظر · Q/E أو مسافة للارتفاع · Shift للإسراع · Esc للخروج';
 whint.style.cssText='position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(11,31,58,.86);color:#fff;font:600 13px Tahoma;padding:8px 14px;border-radius:8px;display:none;z-index:50;pointer-events:none';
 document.body.appendChild(whint);
 const walkBtn=document.createElement('button');walkBtn.textContent='🚶 جولة مشي';walkBtn.className='step';
-function endWalk(){walk=false;whint.style.display='none';walkBtn.textContent='🚶 جولة مشي';setPreset(curView,true);}
+function endWalk(){walk=false;for(const k in keys)keys[k]=false;whint.style.display='none';walkBtn.textContent='🚶 جولة مشي';setPreset(curView,true);}
 walkBtn.onclick=()=>{ if(walk){endWalk();return;}
- if(tour){clearInterval(tour);tour=null;tourBtn.textContent='▶ جولة تلقائية';}
+ if(tour)stopTour();
  walk=true;wpos.copy(cam.position);if(wpos.y>8)wpos.y=1.7;
  const d=target.clone().sub(cam.position);yaw=Math.atan2(d.z,d.x);pitch=Math.max(-0.6,Math.min(0.3,Math.atan2(d.y,Math.hypot(d.x,d.z))));
  whint.style.display='block';walkBtn.textContent='✖ إنهاء المشي'; };
 ctrls.appendChild(walkBtn);
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true; if(k==='escape'&&walk)endWalk(); if(walk&&['w','a','s','d','q','e',' '].includes(k))e.preventDefault();});
+addEventListener('keydown',e=>{if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable))return;
+ const k=e.key.toLowerCase();keys[k]=true; if(k==='escape'&&walk)endWalk(); if(walk&&['w','a','s','d','q','e',' '].includes(k))e.preventDefault();});
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+// ======== اختيار العنصر + إبرازه + بطاقة معلومات مرتبطة بسجل المطابقة ========
+const infocard=document.getElementById('infocard'),icttl=document.getElementById('icttl'),icbody=document.getElementById('icbody');
+const SYS={ // رمز المحور → {الاسم، المرحلة، حالة التمثيل، المصدر} (من سجل المطابقة)
+ '02':{n:'الحماية من الحرائق',ph:'1–2',st:'جزئي — الاستراتيجية معلّقة',src:'المتطلبات §02 + مخطط الإطفاء'},
+ '03':{n:'الغرف الكهربائية',ph:'2',st:'ناقص',src:'المتطلبات §03'},
+ '04':{n:'الرامب ومنصّة التحميل',ph:'1',st:'مكتمل غالبًا × 8 أرصفة',src:'المتطلبات §04'},
+ '05':{n:'المراقبة CCTV',ph:'1–2',st:'جزئي — العدد دالة محيط السور',src:'المتطلبات §05'},
+ '06':{n:'المبنى الإداري',ph:'2',st:'جزئي — المساحة (400/1200) معلّقة',src:'المتطلبات §06'},
+ '07':{n:'المبنى الخدمي/السكني',ph:'2',st:'جزئي',src:'المتطلبات §07'},
+ '08':{n:'بوابة الأمن والميزان 60ط',ph:'1',st:'جزئي',src:'المتطلبات §08'},
+ '09':{n:'حركة المرور والحلقة',ph:'1',st:'جزئي — المسارات تحتاج تلوينًا',src:'المتطلبات §09'},
+ '10':{n:'الرفوف',ph:'1–2',st:'الرفوف ≤6.80م (مُصحَّح) — تجهيز مقترح',src:'المتطلبات §10'},
+ '11':{n:'الاستلام والفرز',ph:'1',st:'جزئي',src:'المتطلبات §11'},
+ '12':{n:'الصرف والشحن',ph:'1',st:'جزئي',src:'المتطلبات §12'},
+ '13':{n:'توزيع العائلات',ph:'1',st:'جزئي',src:'المتطلبات §13'},
+ '14':{n:'ورشة الصيانة',ph:'1–2',st:'جزئي',src:'المتطلبات §14'},
+ '15':{n:'شحن الرافعات',ph:'1',st:'جزئي',src:'المتطلبات §15'},
+ '16':{n:'النفايات والأرضية النظيفة',ph:'1–2',st:'بطاقة',src:'المتطلبات §16'},
+ '17':{n:'أرضيات الإيبوكسي',ph:'1',st:'جزئي — خامة مطبّقة',src:'المتطلبات §17'},
+ '18':{n:'السلامة العامة',ph:'1',st:'جزئي',src:'المتطلبات §18'},
+ '19':{n:'محطة الوقود',ph:'2',st:'جزئي',src:'المتطلبات §19'},
+ '20':{n:'انتظار السائقين',ph:'1',st:'جزئي',src:'المتطلبات §20'},
+ '21':{n:'المولدات وATS',ph:'2',st:'جزئي',src:'المتطلبات §21'},
+ '22':{n:'التكييف والتبريد',ph:'1–2',st:'جزئي — الجدول الكامل معلّق',src:'المتطلبات §22'},
+ '23':{n:'الميزان الداخلي 2×2م',ph:'1',st:'جزئي',src:'إضافة مالك §23'},
+ '25':{n:'الشبكات والإنترنت',ph:'2',st:'بطاقة',src:'إضافة مالك §25'},
+ '26':{n:'مكاتب الثلاجات',ph:'2',st:'جزئي',src:'إضافة مالك §26'}};
+const TYPE_AR={wall:'جدار',floor:'أرضية',zonefloor:'أرضية منطقة',roof:'سقف',roof2:'سقف',glass:'زجاج',door:'باب',dockdoor:'تجهيز رصيف/باب',rack_up:'قائم رف',rack_bm:'عارضة رف',load:'طبلية بضاعة',pallet:'طبلية',col:'عمود',light:'إضاءة علوية',building:'مبنى',office:'مبنى مكتبي',cold:'عنصر تبريد',canopy:'مظلة',fence:'سور',gate:'بوابة',cctv:'كاميرا/إشارة',gen:'مولّد/وحدة',tank:'خزان',truck:'شاحنة',car:'سيارة',person:'عامل',fork:'رافعة شوكية',forkdark:'جزء معدات',tree:'شجرة/نخيل',lane:'خط ممر',concrete:'خرسانة',apron:'منصّة/أرضية',road:'طريق',ground:'أرضية الموقع',yard:'ساحة',sand:'سياق أرض',cylinder:'عنصر أسطواني'};
+function classify(b){
+ if(b.state==='proposed') return {t:'تجهيز مقترح (متطلبات)',c:'#e8781f'};
+ const id=b.id||'', g=b.group||'';
+ if(id.indexOf('ctx_')===0||b.type==='sand') return {t:'سياق محيط (تصوّري)',c:'#8893a0'};
+ if(g==='admin') return {t:'افتراض تصوّري — يحتاج مراجعة',c:'#b48ad6'};   // عنقود Z1: اجتهاد تصوّري
+ if((g.indexOf('WH')===0||g==='cold'||g==='site')&&['wall','floor','roof','roof2','door','building','office','cold','zonefloor','col','glass','road','fence','apron','concrete'].includes(b.type)) return {t:'قائم — تمثيل المخطط',c:'#2fa757'};
+ return {t:'تصوّري',c:'#5b9bd5'};
+}
+function row(k,v){return '<div class="ic-row"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';}
+function focusEl(b){const c=centers[b.id];if(!c)return;const sz=Math.max(b.dimensions_m[0],b.dimensions_m[1],b.dimensions_m[2]);const d=Math.max(14,sz*3.0);glide([c.x+d*0.7,Math.max(c.y+6,c.y+d*0.6),c.z+d*0.7],[c.x,c.y,c.z]);}
+function populateCard(b){
+ const mm=(b.system||'').match(/^\s*(\d{2})/); const ax=mm?SYS[mm[1]]:null; const cl=classify(b);
+ let nm=b.label?b.label.split('—')[0].split('·')[0].trim():(TYPE_AR[b.type]||b.type); if(!nm)nm=b.id||'عنصر';
+ icttl.textContent=nm.length>44?nm.slice(0,43)+'…':nm;
+ let h=row('النوع',(TYPE_AR[b.type]||b.type)+(b.group?' · '+b.group:''));
+ if(b.label)h+=row('الوصف',b.label);
+ h+='<div class="ic-row"><span class="k">التصنيف</span><span class="v"><span class="cls" style="background:'+cl.c+'">'+cl.t+'</span></span></div>';
+ if(ax){h+=row('المحور',ax.n+' — '+ax.src);h+=row('المرحلة',ax.ph);h+=row('التمثيل',ax.st);}
+ else if(b.system)h+=row('المنظومة',b.system);
+ if(cl.t.indexOf('مقترح')>=0||cl.t.indexOf('افتراض')>=0||(mm&&['04','08','10','22'].includes(mm[1])))
+   h+='<div class="note">مقترح أو مرهون بقرار معلّق — المواصفات تحتاج اعتمادًا هندسيًّا. المرجع: سجل المطابقة الموحّد.</div>';
+ icbody.innerHTML=h; infocard.style.display='block';
+}
+const ray=new THREE.Raycaster(); const ndc=new THREE.Vector2();
+let selMesh=null, selHelper=null, selEmis=null, selCur=null;
+function clearSel(){ if(selHelper){scene.remove(selHelper);if(selHelper.geometry)selHelper.geometry.dispose();selHelper=null;}
+ if(selMesh&&selEmis&&selMesh.material&&selMesh.material.emissive){selMesh.material.emissive.copy(selEmis.e);selMesh.material.emissiveIntensity=selEmis.i;}
+ selMesh=null;selEmis=null;selCur=null;infocard.style.display='none'; }
+function selectMesh(m){ clearSel(); selMesh=m; selCur=m.userData.b;
+ if(m.material&&m.material.emissive){selEmis={e:m.material.emissive.clone(),i:(m.material.emissiveIntensity==null?1:m.material.emissiveIntensity)};m.material.emissive.setHex(0xf0b429);m.material.emissiveIntensity=0.45;}
+ try{selHelper=new THREE.BoxHelper(m,0xf0b429);scene.add(selHelper);}catch(e){}
+ populateCard(m.userData.b); }
+function selectAt(cx,cy){ ndc.x=(cx/innerWidth)*2-1; ndc.y=-(cy/innerHeight)*2+1; ray.setFromCamera(ndc,cam);
+ const picks=scene.children.filter(o=>o.isMesh&&o.visible&&o.userData&&o.userData.b&&o.userData.b.type!=='label'&&o.userData.b.id!=='ground'&&o.userData.b.id!=='desert');
+ const hits=ray.intersectObjects(picks,false);
+ if(hits.length)selectMesh(hits[0].object); else clearSel(); }
+document.getElementById('icx').onclick=clearSel;
+document.getElementById('icf').onclick=()=>{if(selCur)focusEl(selCur);};
+
+// ======== M5: الطبقات · الحالة · الأزرار السريعة ========
+const layrows=document.getElementById('layrows');
+LAYDEF.forEach(([key,name,col])=>{
+ const r=document.createElement('label');r.className='lrow';
+ r.innerHTML='<input type="checkbox" checked><span class="sw" style="background:'+col+'"></span>'+name+'<span class="cnt">'+((layerMeshes[key]||[]).length)+'</span>';
+ const cb=r.querySelector('input');cb.dataset.lay=key;cb.onchange=()=>{layerEnabled[key]=cb.checked;applyVis();};
+ layrows.appendChild(r);});
+document.getElementById('cnt_proposed').textContent=(layerMeshes['proposed']||[]).length;
+const statuschips=document.getElementById('statuschips');
+STATDEF.forEach(([key,name,col])=>{
+ const c=document.createElement('span');c.className='chip';c.dataset.st=key;
+ c.innerHTML='<span class="sw" style="background:'+col+'"></span>'+name;
+ c.onclick=()=>{statusEnabled[key]=!statusEnabled[key];c.classList.toggle('off',!statusEnabled[key]);applyVis();};
+ statuschips.appendChild(c);});
+function syncLayerUI(){
+ layrows.querySelectorAll('input').forEach(cb=>cb.checked=!!layerEnabled[cb.dataset.lay]);
+ proposed.checked=!!layerEnabled.proposed;
+ statuschips.querySelectorAll('.chip').forEach(c=>c.classList.toggle('off',!statusEnabled[c.dataset.st]));}
+function ensureVisible(b){layerEnabled[layerOf(b)]=true;statusEnabled[classKey(b)]=true;if(b.type==='zonefloor')zoneFloorsOn=true;if(b.type==='roof')roof.checked=true;phaseShown=0;if(typeof syncPhaseUI==='function')syncPhaseUI();syncLayerUI();applyVis();}
+const QB=[
+ ['عرض الكل',()=>{for(const k in layerEnabled)layerEnabled[k]=true;for(const k in statusEnabled)statusEnabled[k]=true;zoneFloorsOn=true;roof.checked=true;phaseShown=0;if(typeof syncPhaseUI==='function')syncPhaseUI();}],
+ ['إخفاء الكل',()=>{for(const k in layerEnabled)layerEnabled[k]=false;}],
+ ['القائم فقط',()=>{for(const k in layerEnabled)layerEnabled[k]=true;layerEnabled.proposed=false;layerEnabled.context=false;layerEnabled.annot=false;layerEnabled.ops=false;for(const k in statusEnabled)statusEnabled[k]=(k==='built');}],
+ ['بلا مقترح',()=>{layerEnabled.proposed=false;}]];
+const quickbtns=document.getElementById('quickbtns');
+QB.forEach(([t,fn])=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{fn();syncLayerUI();applyVis();};quickbtns.appendChild(b);});
+// ======== M6: مراحل التنفيذ (مجموعة أزرار) ========
+const PHDEF=[[0,'الكل'],[1,'م1 البنية'],[2,'م2 +التجهيز'],[3,'م3 +التشغيل']];
+const PHNOTE={0:'المعروض: كل المراحل — بنية ← تجهيز ← تشغيل (تسلسل تصوّري، ليس جدولًا معتمدًا).',
+ 1:'المرحلة 1 — البنية: الهياكل والطرق والبوابة والمباني (أعمال الإنشاء).',
+ 2:'المرحلة 2 — + التجهيز: الرفوف والأرصفة والمنظومات المساندة (حريق/كهرباء/تكييف/مراقبة).',
+ 3:'المرحلة 3 — + التشغيل: المعدات والشاحنات والعاملون وتدفّق البضائع والمسارات.'};
+const phaseseg=document.getElementById('phaseseg'),phnote=document.getElementById('phnote');
+function syncPhaseUI(){if(phaseseg)[...phaseseg.children].forEach(x=>x.classList.toggle('on',+x.dataset.ph===phaseShown));if(phnote)phnote.textContent=PHNOTE[phaseShown];}
+function setPhase(v){phaseShown=v;syncPhaseUI();applyVis();}
+PHDEF.forEach(([v,t])=>{const b=document.createElement('button');b.dataset.ph=v;b.textContent=t;b.onclick=()=>setPhase(v);phaseseg.appendChild(b);});
+syncPhaseUI();
+
+// ======== M5: مسارات الحركة (أنابيب + أسهم، طبقة علوية تصوّرية) ========
+const PATHLAYERS={}; const animList=[]; let pathsGroup=null, pathAnimCb=null;
+if(SCENE.paths&&SCENE.pathLayers){
+ pathsGroup=new THREE.Group(); const LD=SCENE.pathLayers;
+ for(const k in LD){const sg=new THREE.Group();sg.visible=false;PATHLAYERS[k]=sg;pathsGroup.add(sg);}
+ for(const p of SCENE.paths){const ld=LD[p.layer];if(!ld)continue;
+  const z=ld.z,w=ld.width,col=new THREE.Color(ld.color[0],ld.color[1],ld.color[2]);
+  const pts=p.pts.map(pt=>toT(pt[0],pt[1],pt.length>2?pt[2]:z));
+  if(pts.length<2)continue;
+  const curve=new THREE.CatmullRomCurve3(pts,false,'catmullrom',0.4);
+  let len=0;for(let i=1;i<pts.length;i++)len+=pts[i].distanceTo(pts[i-1]);
+  const mat=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.95});
+  const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(8,Math.ceil(len*1.2)),w/2,8,false),mat);
+  tube.userData.path=p;tube.renderOrder=3;PATHLAYERS[p.layer].add(tube);
+  if(p.dir){const ae=p.arrow_every||16;const n=Math.max(1,Math.floor(len/ae));const up=new THREE.Vector3(0,1,0);
+   for(let i=1;i<=n;i++){const t=i/(n+1);const pos=curve.getPointAt(t),tan=curve.getTangentAt(t).normalize();
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(w*1.15,w*3.2,10),mat);
+    cone.position.copy(pos);cone.quaternion.setFromUnitVectors(up,tan);cone.userData.path=p;cone.renderOrder=3;PATHLAYERS[p.layer].add(cone);}
+   const mk=new THREE.Mesh(new THREE.SphereGeometry(w*1.15,10,10),new THREE.MeshBasicMaterial({color:col}));
+   mk.visible=false;mk.renderOrder=4;PATHLAYERS[p.layer].add(mk);
+   animList.push({sphere:mk,curve:curve,speed:Math.max(0.5,Math.min(3,22/Math.max(6,len)))});}}
+ scene.add(pathsGroup);
+ const pathrows=document.getElementById('pathrows');
+ const mr=document.createElement('label');mr.className='lrow';
+ mr.innerHTML='<input type="checkbox"><b style="color:#eaf1fb">إظهار كل المسارات</b>';
+ const mcb=mr.querySelector('input');pathrows.appendChild(mr); const subs=[];
+ Object.keys(LD).forEach(k=>{const ld=LD[k];const hx='#'+new THREE.Color(ld.color[0],ld.color[1],ld.color[2]).getHexString();
+  const r=document.createElement('label');r.className='lrow';
+  r.innerHTML='<input type="checkbox"><span class="sw" style="background:'+hx+'"></span>'+ld.label;
+  const cb=r.querySelector('input');subs.push([cb,k]);
+  cb.onchange=()=>{PATHLAYERS[k].visible=cb.checked;mcb.checked=subs.some(s=>s[0].checked);};
+  pathrows.appendChild(r);});
+ mcb.onchange=()=>{const on=mcb.checked;subs.forEach(([cb,k])=>{cb.checked=on;PATHLAYERS[k].visible=on;});};
+ const ar=document.createElement('label');ar.className='lrow';
+ ar.innerHTML='<input type="checkbox" id="pathanim"><span style="color:#9fb3d0">تحريك التدفّق على المسارات</span>';
+ pathrows.appendChild(ar);pathAnimCb=ar.querySelector('input');
+ const nt=document.createElement('div');nt.className='hint';nt.style.marginTop='5px';
+ nt.textContent='مسارات تصوّرية للتشغيل وفق §09/§04 — ليست خطوط دهان تنفيذية.';
+ pathrows.appendChild(nt);
+}
+
+// ======== M5: البحث الفوري (اسم عربي · رمز مخزن · محور) ========
+function norm(s){return (s||'').replace(/[ً-ْٰـ]/g,'').replace(/[إأآ]/g,'ا').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/ة/g,'ه').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[‐-―‐]/g,'-').replace(/\s+/g,' ').trim().toLowerCase();}
+function codes(b){const s=((b.label||'')+' '+(b.id||'')).toUpperCase();const out=new Set();
+ (s.match(/E-?\d+/g)||[]).forEach(c=>out.add(c.replace(/E-?/,'E-')));
+ (s.match(/CS-?\d+/g)||[]).forEach(c=>out.add(c.replace(/CS-?/,'CS-')));
+ if(/E-?F/.test(s)||/الثلاج|مبرّد|مبرد/.test(b.label||''))out.add('E-F');
+ return [...out];}
+const IDX=B.filter(b=>b.label&&b.type!=='label'||(b.label&&b.id&&/^req_/.test(b.id))).map(b=>{
+ const clean=b.label.split('—')[0].split('·')[0].trim();
+ const mm=(b.system||'').match(/^\s*(\d{2})/);const ax=mm?mm[1]:'';const axn=ax&&SYS[ax]?SYS[ax].n:'';
+ return{b,clean,nn:norm(clean),full:norm(b.label),codes:codes(b).map(c=>norm(c)),ax,axn:norm(axn),sys:norm(b.system),idn:norm(b.id),cls:classify(b),pri:Math.max(b.dimensions_m[0],b.dimensions_m[1],b.dimensions_m[2])};});
+function doSearch(qq){const nq=norm(qq);if(!nq)return [];const out=[];
+ for(const r of IDX){let sc=0;
+  if(r.codes.includes(nq))sc=100; else if(r.nn.indexOf(nq)===0)sc=80; else if(r.nn.indexOf(nq)>=0)sc=60;
+  else if(r.ax&&(r.ax===nq||'ax-'+r.ax===nq||'§'+r.ax===nq||'محور '+r.ax===nq))sc=50;
+  else if(r.axn&&r.axn.indexOf(nq)>=0)sc=42; else if(r.sys&&r.sys.indexOf(nq)>=0)sc=40; else if(r.idn.indexOf(nq)>=0)sc=20;
+  if(!sc){const hay=r.nn+' '+r.full+' '+r.axn+' '+r.sys;const a=nq.replace(/^ال/,'');if(hay.indexOf(nq)>=0||(a.length>1&&hay.indexOf(a)>=0))sc=30;}
+  if(sc)out.push([sc+Math.min(9,r.pri/20),r]);}
+ out.sort((a,b)=>b[0]-a[0]);return out.slice(0,8).map(s=>s[1]);}
+const q=document.getElementById('q'),sresults=document.getElementById('sresults');
+let curRes=[],selIdx=-1,qtimer=0;
+function hiRes(){[...sresults.querySelectorAll('.sres')].forEach((el,i)=>el.classList.toggle('sel',i===selIdx));}
+function renderRes(list){curRes=list;selIdx=-1;
+ if(!list.length){ if(q.value.trim()){sresults.innerHTML='<div class="snone">لا نتائج مطابقة</div>';sresults.classList.add('on');} else {sresults.classList.remove('on');sresults.innerHTML='';} return;}
+ sresults.innerHTML=list.map((r,i)=>{const sfx=(r.codes[0]?r.codes[0].toUpperCase():(r.ax?'محور '+r.ax:(r.b.group||'')));
+  return '<div class="sres" data-i="'+i+'"><span class="cbar" style="background:'+r.cls.c+'"></span><span class="nm">'+r.clean+'</span><span class="sfx">'+sfx+'</span></div>';}).join('');
+ sresults.classList.add('on');
+ [...sresults.querySelectorAll('.sres')].forEach(el=>el.onclick=()=>pick(curRes[+el.dataset.i]));}
+function pick(r){if(!r)return;const b=r.b;ensureVisible(b);const m=meshById[b.id];if(m)selectMesh(m);else{clearSel();populateCard(b);}focusEl(b);sresults.classList.remove('on');}
+q.addEventListener('input',()=>{bar.classList.remove('collapsed');clearTimeout(qtimer);qtimer=setTimeout(()=>renderRes(doSearch(q.value)),120);});
+q.addEventListener('keydown',e=>{
+ if(e.key==='ArrowDown'){selIdx=Math.min(curRes.length-1,selIdx+1);hiRes();e.preventDefault();}
+ else if(e.key==='ArrowUp'){selIdx=Math.max(0,selIdx-1);hiRes();e.preventDefault();}
+ else if(e.key==='Enter'){pick(curRes[selIdx>=0?selIdx:0]);}
+ else if(e.key==='Escape'){if(sresults.classList.contains('on')){sresults.classList.remove('on');}else{q.value='';}}});
+
+// ======== M5: الخريطة المصغّرة (مسقط أفقي 2D) ========
+const PLOT=(SCENE.meta.plot||[[4,6],[4,170],[14,212],[250,236],[360,176],[384,92],[360,6]]);
+const ZONES=(SCENE.meta.zones||[]);
+const mm=document.getElementById('mm'),mmx=mm.getContext('2d');
+const PX0=4,PX1=384,PY0=6,PY1=236;
+let mmbase=null,mmW=0,mmH=0,mmS=1,mmOffX=0,mmOffY=0;
+function mmProject(e,n){return [mmOffX+(e-PX0)*mmS, mmOffY+(mmH-(n-PY0)*mmS)];}
+function mmUnproject(px,py){return [PX0+(px-mmOffX)/mmS, PY0+(mmH-(py-mmOffY))/mmS];}
+function rgba(c,a){return 'rgba('+((c[0]*255)|0)+','+((c[1]*255)|0)+','+((c[2]*255)|0)+','+a+')';}
+function buildMinimapBase(){const dpr=Math.min(devicePixelRatio,2);
+ const cssW=(innerWidth<=720?150:200), cssH=Math.round(cssW*(PY1-PY0)/(PX1-PX0));
+ mm.style.width=cssW+'px';mm.width=cssW*dpr;mm.height=cssH*dpr;mmx.setTransform(dpr,0,0,dpr,0,0);
+ mmW=cssW;mmH=cssH;mmS=Math.min(cssW/(PX1-PX0),cssH/(PY1-PY0));mmOffX=(cssW-(PX1-PX0)*mmS)/2;mmOffY=(cssH-(PY1-PY0)*mmS)/2;
+ mmbase=document.createElement('canvas');mmbase.width=cssW*dpr;mmbase.height=cssH*dpr;
+ const g=mmbase.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,cssW,cssH);
+ ZONES.forEach(z=>{const a=mmProject(z.x,z.y+z.d),b=mmProject(z.x+z.w,z.y);g.fillStyle=rgba(z.color,0.14);g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);});
+ g.beginPath();PLOT.forEach((p,i)=>{const u=mmProject(p[0],p[1]);i?g.lineTo(u[0],u[1]):g.moveTo(u[0],u[1]);});g.closePath();
+ g.strokeStyle='rgba(185,205,230,.55)';g.lineWidth=1;g.stroke();
+ const s1=mmProject(92,54),s2=mmProject(354,54);g.strokeStyle='rgba(150,165,185,.45)';g.lineWidth=2;g.beginPath();g.moveTo(s1[0],s1[1]);g.lineTo(s2[0],s2[1]);g.stroke();
+ const wh=SCENE.meta.warehouses||[];g.textAlign='center';g.textBaseline='middle';g.font='700 7px Tahoma';
+ wh.forEach(w=>{const zc=(ZONES.find(z=>z.z===w.zone)||{color:[.5,.55,.6]}).color;const a=mmProject(w.x,w.y+w.l),b=mmProject(w.x+w.w,w.y);
+  g.fillStyle=rgba(zc,0.6);g.fillRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
+  g.strokeStyle='rgba(11,31,58,.9)';g.lineWidth=.8;g.strokeRect(a[0],a[1],b[0]-a[0],b[1]-a[1]);
+  g.fillStyle='#fff';g.fillText(w.name,(a[0]+b[0])/2,(a[1]+b[1])/2);});
+ g.fillStyle='#f0b429';g.font='700 9px Tahoma';g.textAlign='left';g.fillText('N↑',4,10);
+ const sc=50*mmS;g.strokeStyle='#cdd8e6';g.lineWidth=1.5;g.beginPath();g.moveTo(cssW-8-sc,cssH-6);g.lineTo(cssW-8,cssH-6);g.stroke();
+ g.fillStyle='#cdd8e6';g.font='600 7px Tahoma';g.textAlign='right';g.fillText('50م',cssW-8,cssH-9);mmKey='';}
+let mmKey='';
+function drawMinimap(){if(!mmbase)return;
+ const camE=cam.position.x,camN=cam.position.z,tgtE=target.x,tgtN=target.z;
+ const key=(camE|0)+','+(camN|0)+','+(tgtE|0)+','+(tgtN|0);if(key===mmKey)return;mmKey=key;
+ mmx.clearRect(0,0,mmW,mmH);mmx.drawImage(mmbase,0,0,mmW,mmH);
+ const c=mmProject(camE,camN),planDist=Math.hypot(tgtE-camE,tgtN-camN);
+ if(walk||planDist>3){const heading=walk?yaw:Math.atan2(tgtN-camN,tgtE-camE),half=Math.atan(Math.tan(50*Math.PI/360)*(innerWidth/innerHeight)),reach=Math.max(25,Math.min(300,walk?40:planDist*1.4))*mmS;
+  mmx.beginPath();mmx.moveTo(c[0],c[1]);mmx.arc(c[0],c[1],reach,-heading-half,-heading+half);mmx.closePath();mmx.fillStyle='rgba(240,180,41,.22)';mmx.fill();}
+ mmx.beginPath();mmx.arc(c[0],c[1],3,0,7);mmx.fillStyle='#f0b429';mmx.fill();mmx.strokeStyle='#0b1f3a';mmx.lineWidth=1;mmx.stroke();}
+mm.addEventListener('click',e=>{const rect=mm.getBoundingClientRect();
+ const px=(e.clientX-rect.left)*(mmW/rect.width),py=(e.clientY-rect.top)*(mmH/rect.height);
+ let en=mmUnproject(px,py),e2=Math.max(PX0,Math.min(PX1,en[0])),n2=Math.max(PY0,Math.min(PY1,en[1]));
+ if(tour)stopTour();
+ const wh=SCENE.meta.warehouses||[],hit=wh.find(w=>e2>=w.x&&e2<=w.x+w.w&&n2>=w.y&&n2<=w.y+w.l);
+ if(hit){if(hit.name==='E-F')enterCold();else{const idx=WHd.findIndex(w=>w.name===hit.name);if(idx>=0)enterWH(WHd[idx]);}return;}
+ if(walk){wpos.x=e2;wpos.z=n2;return;}
+ const o=cam.position.clone().sub(target),ty=Math.max(2,target.y);glide([e2+o.x,ty+o.y,n2+o.z],[e2,ty,n2]);});
+window.__mm=buildMinimapBase;buildMinimapBase();
+
+// ======== M6: البنود التنفيذية (163) — تصفّح وربط بالمشاهد ========
+const ITEMS=(window.ITEMS155||{chapters:[]});
+const CHMAP={1:{v:4,el:'fk0_bd'},2:{v:2,el:'tkw0_tr'},3:{v:15,el:'WHE-7_lv0'},4:{v:10,el:'req_rack'},
+ 5:{v:5,el:'stg1_0_0'},6:{v:4,el:'WHE-5_wmo'},7:{v:7,el:'assembly'},8:{v:7,el:'fire_tank'},
+ 9:{v:11,el:'scale_recv'},10:{v:5,el:'disp_zone'},11:{v:2,el:'gate_house'},12:{v:7,el:'workshop'},
+ 13:{v:16,el:'admin'},14:{v:5,el:'wk0_to'},15:{v:16,el:'control_room'},16:{v:7,el:'workshop'}};
+function pClass(p){return p===1?'p1':(p===2?'p2':'p0');}
+function pShort(p){return p===1?'م1':(p===2?'م2':'ق');}
+function itemCard(it,ch){
+ const t=it.code+' · '+it.title;icttl.textContent=t.length>46?t.slice(0,45)+'…':t;
+ let h=row('البند',it.title);
+ if(it.spec)h+=row('المواصفة',it.spec);
+ h+='<div class="ic-row"><span class="k">المرحلة</span><span class="v"><span class="cls" style="background:'+(it.phase===1?'#2fa757':it.phase===2?'#5b9bd5':'#e8781f')+'">'+it.phaseLbl+'</span></span></div>';
+ if(it.prioLbl&&it.prioLbl.length)h+=row('الأولوية',it.prioLbl.join(' · '));
+ h+=row('الباب',ch.n+' · '+ch.title);
+ h+=row('النطاق',(ch.scopeShort||'155'));
+ h+=row('التمثيل',it.repr);h+=row('الوصول',it.access);h+=row('الحالة',it.status);
+ h+='<div class="note">بند من «القائمة الشاملة» (163). الأولوية ليست اعتمادًا؛ المقترح/المعلّق يحتاج قرارًا هندسيًّا.</div>';
+ icbody.innerHTML=h;infocard.style.display='block';}
+function gotoItem(it,ch){const map=CHMAP[ch.n]||{v:1};setPreset(map.v);
+ const m=map.el&&meshById[map.el];if(m){ensureVisible(m.userData.b);selectMesh(m);focusEl(m.userData.b);}
+ itemCard(it,ch);}
+const chaps=document.getElementById('chaps'),itemflt=document.getElementById('itemflt');
+function buildChaps(flt){if(!chaps)return;chaps.innerHTML='';const nf=flt?norm(flt):'';let shown=0;
+ ITEMS.chapters.forEach(ch=>{
+  const matches=ch.items.filter(it=>!nf||norm(it.code).indexOf(nf)>=0||norm(it.title).indexOf(nf)>=0||norm(it.spec).indexOf(nf)>=0);
+  if(!matches.length)return;shown+=matches.length;
+  const d=document.createElement('div');d.className='chap'+(nf?' open':'');
+  const hd=document.createElement('div');hd.className='ch-h';
+  hd.innerHTML='<span class="ar">▸</span><span class="ci">'+ch.n+'</span>'+ch.title+'<span class="cc">'+matches.length+(nf?'':'/'+ch.items.length)+'</span>';
+  hd.onclick=()=>d.classList.toggle('open');
+  const bd=document.createElement('div');bd.className='ch-b';
+  matches.forEach(it=>{const r=document.createElement('div');r.className='irow';
+   r.innerHTML='<span class="pch '+pClass(it.phase)+'">'+pShort(it.phase)+'</span><span class="ic">'+it.code+'</span><span class="it">'+it.title+'</span>';
+   r.onclick=()=>{if(innerWidth<760)bar.classList.add('collapsed');gotoItem(it,ch);};bd.appendChild(r);});
+  d.appendChild(hd);d.appendChild(bd);chaps.appendChild(d);});
+ if(!shown)chaps.innerHTML='<div class="snone">لا بنود مطابقة</div>';}
+if(itemflt)itemflt.addEventListener('input',()=>buildChaps(itemflt.value));
+buildChaps('');
+
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 let last=performance.now();
 function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
@@ -271,11 +713,18 @@ function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/
   if(keys['e']||keys[' '])wpos.y=Math.min(45,wpos.y+sp*0.8); if(keys['q'])wpos.y=Math.max(1.0,wpos.y-sp*0.8);
   cam.position.copy(wpos);const cp=Math.cos(pitch);target.set(wpos.x+Math.cos(yaw)*cp,wpos.y+Math.sin(pitch),wpos.z+Math.sin(yaw)*cp);cam.lookAt(target);}
  else if(gT<1){gT=Math.min(1,gT+dt/0.9);const e=ease(gT);cam.position.lerpVectors(gP0,gP1,e);target.lerpVectors(gT0,gT1,e);cam.lookAt(target);}
- else if(!drag&&(Math.abs(orbVel.th)>1e-4||Math.abs(orbVel.ph)>1e-4)){const o=cam.position.clone().sub(target),r=o.length();let th=Math.atan2(o.z,o.x),ph=Math.acos(o.y/r);
-  th+=orbVel.th;ph=Math.max(0.05,Math.min(Math.PI/2.02,ph+orbVel.ph));orbVel.th*=0.9;orbVel.ph*=0.9;
-  cam.position.set(target.x+r*Math.sin(ph)*Math.cos(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(target);}
+ else{ let wk=false;
+  if(keys['w']||keys['a']||keys['s']||keys['d']){const fx=target.x-cam.position.x,fz=target.z-cam.position.z,fl=Math.hypot(fx,fz)||1,hx=fx/fl,hz=fz/fl,sp=Math.max(6,cam.position.distanceTo(target)*0.6)*dt;let mx=0,mz=0;
+   if(keys['w']){mx+=hx;mz+=hz;} if(keys['s']){mx-=hx;mz-=hz;} if(keys['d']){mx-=hz;mz+=hx;} if(keys['a']){mx+=hz;mz-=hx;}
+   const ml=Math.hypot(mx,mz); if(ml>0.001){mx/=ml;mz/=ml;target.x+=mx*sp;target.z+=mz*sp;cam.position.x+=mx*sp;cam.position.z+=mz*sp;cam.lookAt(target);wk=true;gT=1;orbVel.th=0;orbVel.ph=0;}}
+  if(!wk&&!drag&&(Math.abs(orbVel.th)>1e-4||Math.abs(orbVel.ph)>1e-4)){const o=cam.position.clone().sub(target),r=o.length();let th=Math.atan2(o.z,o.x),ph=Math.acos(o.y/r);
+   th+=orbVel.th;ph=Math.max(0.05,Math.min(Math.PI/2.02,ph+orbVel.ph));orbVel.th*=0.9;orbVel.ph*=0.9;
+   cam.position.set(target.x+r*Math.sin(ph)*Math.cos(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(target);}}
  renderer.render(scene,cam);
- octx.clearRect(0,0,innerWidth,innerHeight); if(labels.checked&&!walk)paintLabels(octx,innerWidth,innerHeight,LIVE);}
+ octx.clearRect(0,0,innerWidth,innerHeight); if(labels.checked&&!walk)paintLabels(octx,innerWidth,innerHeight,LIVE);
+ if(animList.length){const on=pathAnimCb&&pathAnimCb.checked,tt=now*0.00005;animList.forEach((a,i)=>{a.sphere.visible=on;if(on)a.sphere.position.copy(a.curve.getPointAt(((tt*a.speed+i*0.11)%1+1)%1));});}
+ if(tour&&tcf){tcf.style.width=(Math.min(1,(now-tcapStart)/tourDur)*100)+'%';}
+ if(mmbase)drawMinimap();}
 const h=location.hash.match(/view=(\d+)/);setPreset(h?+h[1]:1,true);requestAnimationFrame(loop);
 window.__setPreset=setPreset;
 window.__look=(cx,cy,cz,tx,ty,tz,ro)=>{gT=1;roof.checked=!!ro;applyRoof();cam.position.set(cx,cy,cz);target.set(tx,ty,tz);cam.lookAt(target);};
