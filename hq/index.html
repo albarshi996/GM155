@@ -89,8 +89,14 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xcad7e4);
 const SCENE_ID = new URLSearchParams(location.search).get('scene') || 'WHE5';
-const SCENE_NAME = SCENE_ID === 'Z3' ? 'المبرّد E‑F · 8 أرصفة' : 'E‑5';
+const SCENE_NAME = SCENE_ID === 'Z3' ? 'المبرّد E‑F · 8 أرصفة' : (SCENE_ID === 'full' ? 'الموقع الكامل · 5 مناطق' : 'E‑5');
+const SCENE_SHORT = SCENE_ID === 'Z3' ? 'المبرّد' : (SCENE_ID === 'full' ? 'الموقع' : 'E‑5');
 try { document.title = 'أبوهادي 155 — ' + SCENE_NAME; const _ld0 = document.getElementById('load'); if (_ld0) _ld0.textContent = '…جارٍ تحميل مشهد ' + SCENE_NAME + ' عالي الجودة'; } catch (e) {}
+// scene-aware control labels: "fit" frames the whole loaded scene; "inside E‑5" only makes sense in the E‑5 scene
+try {
+  const _fit = document.getElementById('fit'); if (_fit) _fit.textContent = 'تأطير ' + SCENE_SHORT;
+  const _ins = document.getElementById('inside'); if (_ins && SCENE_ID !== 'WHE5') _ins.style.display = 'none';
+} catch (e) {}
 
 // image-based lighting: neutral room as fallback, then the real Poly Haven HDRI (CC0)
 const pmrem = new THREE.PMREMGenerator(renderer);
@@ -185,56 +191,79 @@ try {
   composer.addPass(new OutputPass());
 } catch (e) { console.warn('N8AO init failed → direct render', e); composer = null; }
 
-// ---- load the E-5 GLBs (built shell + proposed fit-out) ----
-const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-const meshById = {};
-const proposedMats = [];
-let usedProposed = false, usedConcept = false;
-let builtGroup, propGroup;
-const CAST = new Set(['WHE']); // everything casts for now
+// ---- generic materials for non-role types (batched; per-instance colour) ----
+function gmat(rough, metal, extra) { return new THREE.MeshStandardMaterial(Object.assign({ color: 0xffffff, roughness: rough, metalness: metal, envMapIntensity: 0.9 }, extra || {})); }
+const matMatte = gmat(0.85, 0.0), matMetal = gmat(0.45, 0.55);
+const matMatteP = gmat(0.85, 0.0), matMetalP = gmat(0.45, 0.55);
+matMatteP.emissive = new THREE.Color(0xe8781f); matMatteP.emissiveIntensity = 0.08;
+matMetalP.emissive = new THREE.Color(0xe8781f); matMetalP.emissiveIntensity = 0.08;
+const matGlass = new THREE.MeshStandardMaterial({ color: 0x9fc0e0, roughness: 0.1, metalness: 0, transparent: true, opacity: 0.4 });
+const matLight = new THREE.MeshStandardMaterial({ color: 0xfff0d0, emissive: new THREE.Color(0xfff0d0), emissiveIntensity: 1.1 });
+const METAL_TYPES = new Set(['truck','car','fork','forkdark','gen','tank','gate','cctv','dockdoor','guard']);
+const PROPOSED_GENERICS = [matMatteP, matMetalP];
+function pickMat(b, proposed) {
+  const role = b && TYPE_ROLE[b.type];
+  if (role) {
+    if (proposed) { usedProposed = true; return { m: roleMatP[role], tint: false }; }
+    if (classify(b).t.indexOf('تصوّري') >= 0) { usedConcept = true; return { m: roleMatC[role], tint: false }; }
+    return { m: roleMat[role], tint: false };
+  }
+  const t = b ? b.type : '';
+  if (t === 'light') return { m: matLight, tint: false };
+  if (t === 'glass') return { m: matGlass, tint: true };
+  if (proposed) usedProposed = true;
+  const metal = METAL_TYPES.has(t);
+  return { m: proposed ? (metal ? matMetalP : matMatteP) : (metal ? matMetal : matMatte), tint: true };
+}
 
-function registerIds(root, proposed) {
-  root.traverse((o) => {
-    if (o.isMesh) {
-      o.castShadow = true; o.receiveShadow = true;
-      const _id = (o.userData && o.userData.elementId) || o.name;
-      const _b = BOX[_id]; const _role = _b && TYPE_ROLE[_b.type];
-      const _concept = _b && classify(_b).t.indexOf('تصوّري') >= 0;
-      if (_role) {
-        if (proposed) { o.material = roleMatP[_role]; usedProposed = true; }
-        else if (_concept) { o.material = roleMatC[_role]; usedConcept = true; }
-        else o.material = roleMat[_role];
-      } else {
-        if (_b) tuneMat(o.material, _b.type);
-        if (proposed) {
-          o.material = o.material.clone();
-          o.material.emissive = new THREE.Color(0xe8781f);
-          o.material.emissiveIntensity = 0.10;
-          proposedMats.push(o.material); usedProposed = true;
-        }
-      }
-      if (o.geometry && !o.geometry.boundsTree) { try { o.geometry.computeBoundsTree(); } catch (e) {} }
-    }
+// ---- load GLBs → collect instances (batched render, few draw calls on the iGPU) ----
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+const collected = [];
+let usedProposed = false, usedConcept = false;
+let BOX = {};
+const elIndex = {};        // elementId -> { bm, iid, box, type, baseColor }
+let batchedGroup = null;
+
+async function loadData() {
+  try {   // committed site_scene.js (window.SCENE) → data layer works on GitHub Pages too
+    await new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../site_scene.js?v=' + Date.now(); s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+    const j = window.SCENE; if (j && j.boxes) for (const b of j.boxes) BOX[b.id] = b;
+  } catch (e) { console.warn('site_scene.js load', e); }
+}
+async function collectGLB(url, proposed) {
+  const g = await loader.loadAsync(url);
+  g.scene.updateWorldMatrix(true, true);
+  g.scene.traverse((o) => {
+    if (!o.isMesh) return;
     const id = (o.userData && o.userData.elementId) || o.name;
-    if (id) meshById[id] = o;
+    const b = BOX[id];
+    const pm = pickMat(b, proposed);
+    const col = (pm.tint && b && b.color) ? new THREE.Color().setRGB(b.color[0], b.color[1], b.color[2]) : null;
+    collected.push({ geometry: o.geometry, matrix: o.matrixWorld.clone(), material: pm.m, elementId: id, box: b, type: b ? b.type : '', color: col });
   });
 }
-
-async function loadGLB(url, proposed) {
-  const g = await loader.loadAsync(url);
-  registerIds(g.scene, proposed);
-  scene.add(g.scene);
-  return g.scene;
-}
-
-// ---- box metadata from the SAME data layer (site_scene.json) ----
-let BOX = {};
-async function loadData() {
-  try {   // use the committed site_scene.js (window.SCENE) so the data layer works on GitHub Pages too
-    await new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../site_scene.js?v=' + Date.now(); s.onload = res; s.onerror = rej; document.head.appendChild(s); });
-    const j = window.SCENE;
-    if (j && j.boxes) for (const b of j.boxes) BOX[b.id] = b;
-  } catch (e) { console.warn('site_scene.js load', e); }
+function buildBatches() {
+  const byMat = new Map();
+  for (const it of collected) { if (!byMat.has(it.material)) byMat.set(it.material, []); byMat.get(it.material).push(it); }
+  batchedGroup = new THREE.Group();
+  for (const [mat, grp] of byMat) {
+    const geoMap = new Map(); let vtx = 0, idx = 0;
+    for (const it of grp) { if (!geoMap.has(it.geometry.uuid)) { geoMap.set(it.geometry.uuid, it.geometry); vtx += it.geometry.attributes.position.count; idx += it.geometry.index ? it.geometry.index.count : it.geometry.attributes.position.count; } }
+    const bm = new THREE.BatchedMesh(grp.length, vtx, idx, mat);
+    bm.castShadow = true; bm.receiveShadow = true; bm.userData.b2el = {};
+    const gid = new Map();
+    for (const [uuid, geo] of geoMap) gid.set(uuid, bm.addGeometry(geo));
+    for (const it of grp) {
+      const iid = bm.addInstance(gid.get(it.geometry.uuid));
+      bm.setMatrixAt(iid, it.matrix);
+      if (it.color) bm.setColorAt(iid, it.color);
+      bm.userData.b2el[iid] = it.elementId;
+      elIndex[it.elementId] = { bm, iid, box: it.box, type: it.type, baseColor: it.color ? it.color.clone() : new THREE.Color(1, 1, 1) };
+    }
+    bm.computeBoundingBox && bm.computeBoundingBox();
+    batchedGroup.add(bm);
+  }
+  scene.add(batchedGroup);
 }
 
 function classify(b) {
@@ -248,26 +277,27 @@ function classify(b) {
 }
 const TYPE_AR = { wall:'جدار', floor:'أرضية', zonefloor:'أرضية منطقة', roof:'سقف', roof2:'سقف', glass:'زجاج', door:'باب', dockdoor:'تجهيز رصيف/باب', rack_up:'قائم رف', rack_bm:'عارضة رف', load:'طبلية بضاعة', pallet:'طبلية', col:'عمود', light:'إضاءة علوية', building:'مبنى', office:'مبنى مكتبي', cold:'عنصر تبريد', canopy:'مظلة', fork:'رافعة شوكية', forkdark:'جزء معدات', person:'عامل', concrete:'خرسانة', apron:'منصّة', lane:'خط ممر' };
 
-// ---- selection ----
+// ---- selection (BatchedMesh per-instance gold tint + outline; picking by batchId) ----
 const ray = new THREE.Raycaster();
 const ndc = new THREE.Vector2();
-let selMesh = null, selOrigMat = null, selBox = null;
+let selEl = null, selBox = null;
 const card = document.getElementById('card'), ct = document.getElementById('ct'), cb = document.getElementById('cb');
+const _GOLD = new THREE.Color(0xf0b429), _m4 = new THREE.Matrix4();
+const _unit = new THREE.Box3(new THREE.Vector3(-0.5, -0.5, -0.5), new THREE.Vector3(0.5, 0.5, 0.5));
 function clearSel() {
-  if (selMesh && selOrigMat) { if (selMesh.material !== selOrigMat) selMesh.material.dispose(); selMesh.material = selOrigMat; selOrigMat = null; }
+  if (selEl) { const e = elIndex[selEl]; if (e) e.bm.setColorAt(e.iid, e.baseColor); selEl = null; }
   if (selBox) { selBox.geometry.dispose(); selBox.material.dispose(); scene.remove(selBox); selBox = null; }
-  selMesh = null; card.style.display = 'none'; needRender();
+  card.style.display = 'none'; needRender();
 }
 function row(k, v) { return '<div class="r"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; }
-function select(mesh) {
+function selectEl(id) {
   clearSel();
-  selMesh = mesh; selOrigMat = mesh.material;        // private clone for the highlight → never mutate the shared role material
-  const m = mesh.material.clone(); mesh.material = m;
-  m.emissive = new THREE.Color(0xf0b429); m.emissiveIntensity = 0.5;
-  selBox = new THREE.BoxHelper(mesh, 0xf0b429); scene.add(selBox);
-  const id = (mesh.userData && mesh.userData.elementId) || mesh.name;
-  const b = BOX[id];
-  const cl = classify(b);
+  const e = elIndex[id]; if (!e) return;
+  selEl = id; e.bm.setColorAt(e.iid, _GOLD);
+  e.bm.getMatrixAt(e.iid, _m4);
+  const bx = _unit.clone().applyMatrix4(_m4).applyMatrix4(e.bm.matrixWorld);
+  selBox = new THREE.Box3Helper(bx, 0xf0b429); scene.add(selBox);
+  const b = e.box, cl = classify(b);
   let nm = b && b.label ? b.label.split('—')[0].split('·')[0].trim() : (b ? (TYPE_AR[b.type] || b.type) : id);
   ct.textContent = (nm || id).slice(0, 44);
   let h = row('المعرّف', id);
@@ -280,11 +310,14 @@ function select(mesh) {
   cb.innerHTML = h; card.style.display = 'block'; needRender();
 }
 canvas.addEventListener('pointerup', (e) => {
-  if (e._moved) return;
+  if (e._moved || !batchedGroup) return;
   ndc.x = (e.clientX / innerWidth) * 2 - 1; ndc.y = -(e.clientY / innerHeight) * 2 + 1;
   ray.setFromCamera(ndc, camera);
-  const hits = ray.intersectObjects([builtGroup, propGroup].filter(Boolean), true);
-  if (hits.length) select(hits[0].object); else clearSel();
+  const hits = ray.intersectObject(batchedGroup, true);
+  if (hits.length && hits[0].batchId !== undefined && hits[0].object.userData.b2el) {
+    const id = hits[0].object.userData.b2el[hits[0].batchId];
+    if (id) selectEl(id); else clearSel();
+  } else clearSel();
 });
 let downX, downY;
 canvas.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
@@ -293,10 +326,17 @@ document.getElementById('cx').onclick = clearSel;
 
 // ---- fit / framing ----
 const fitBox = new THREE.Box3();
+const _CTX_RE = /^(ctx_|desert|horizon|ground)/;
 function fitAll(transition) {
   fitBox.makeEmpty();
-  if (builtGroup) fitBox.expandByObject(builtGroup);
-  if (propGroup) fitBox.expandByObject(propGroup);
+  for (const id in elIndex) {           // frame the plot, not the surrounding desert/context plane
+    if (_CTX_RE.test(id)) continue;
+    const e = elIndex[id]; e.bm.getMatrixAt(e.iid, _m4);
+    fitBox.expandByPoint(new THREE.Vector3().setFromMatrixPosition(_m4));
+  }
+  if (fitBox.isEmpty() && batchedGroup) batchedGroup.children.forEach((bm) => { if (bm.boundingBox) fitBox.union(bm.boundingBox); });
+  if (fitBox.isEmpty()) return;
+  fitBox.expandByScalar(6);
   const c = fitBox.getCenter(new THREE.Vector3()), s = fitBox.getSize(new THREE.Vector3());
   const d = Math.max(s.x, s.z) * 0.62 + s.y * 2;
   controls.setLookAt(c.x + d * 0.75, c.y + Math.max(s.y * 3, d * 0.55), c.z + d * 0.75, c.x, c.y, c.z, !!transition);
@@ -314,10 +354,10 @@ document.getElementById('top').onclick = () => {
 };
 document.getElementById('ghost').onchange = (e) => {
   const on = e.target.checked;
-  for (const m of [...proposedMats, ...Object.values(roleMatP), ...Object.values(roleMatC)]) { m.transparent = on; m.opacity = on ? 0.45 : 1.0; m.depthWrite = !on; m.needsUpdate = true; }
+  for (const m of [...Object.values(roleMatP), ...Object.values(roleMatC), ...PROPOSED_GENERICS]) { m.transparent = on; m.opacity = on ? 0.45 : 1.0; m.depthWrite = !on; m.needsUpdate = true; }
   renderer.shadowMap.needsUpdate = true; needRender();
 };
-function setRoof(on){ for(const id in meshById){ const b=BOX[id]; if(b && b.type==='roof'){ meshById[id].visible=on; } } renderer.shadowMap.needsUpdate = true; needRender(); }
+function setRoof(on){ for (const id in elIndex) { const e = elIndex[id]; if (e.type === 'roof' || e.type === 'roof2') e.bm.setVisibleAt(e.iid, on); } renderer.shadowMap.needsUpdate = true; needRender(); }
 const roofCb=document.getElementById('roof'); if(roofCb) roofCb.onchange=(e)=>setRoof(e.target.checked);
 document.getElementById('inside').onclick=()=>{ if(roofCb) roofCb.checked=false; setRoof(false);
   const c=fitBox.getCenter(new THREE.Vector3());
@@ -343,10 +383,11 @@ function animate() {
 // ---- boot ----
 (async () => {
   await loadData();
-  [builtGroup, propGroup] = await Promise.all([
-    loadGLB('models/site_built_' + SCENE_ID + '.opt.glb', false),
-    loadGLB('models/site_proposed_' + SCENE_ID + '.opt.glb', true),
+  await Promise.all([
+    collectGLB('models/site_built_' + SCENE_ID + '.opt.glb', false),
+    collectGLB('models/site_proposed_' + SCENE_ID + '.opt.glb', true),
   ]);
+  buildBatches();
   fitAll(false);
   try {   // yard ground plane (asphalt CC0) under the scene
     const gt = loadTex('asphalt_Diffuse.jpg', true), ga = loadTex('asphalt_arm.jpg', false);
@@ -374,9 +415,9 @@ function animate() {
   }
   document.getElementById('load').style.display = 'none';
   const _cats = ['قائم'].concat(usedConcept ? ['تصوّري'] : [], usedProposed ? ['مقترح'] : []).join(' + ');
-  document.getElementById('stats').textContent = 'عناصر: ' + Object.keys(meshById).length + ' · ' + _cats + ' · اختر عنصرًا بالنقر';
+  document.getElementById('stats').textContent = 'عناصر: ' + Object.keys(elIndex).length + ' · ' + _cats + ' · اختر عنصرًا بالنقر';
   animate();
-  window.__hq = { scene, camera, controls, renderer, composer, n8aoPass, meshById, fitAll, renderFrame };
+  window.__hq = { scene, camera, controls, renderer, composer, n8aoPass, elIndex, batchedGroup, fitAll, renderFrame, selectEl };
 })().catch((e) => { document.getElementById('load').textContent = 'خطأ: ' + e.message; console.error(e); });
 </script>
 </body></html>
