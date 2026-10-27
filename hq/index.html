@@ -15,11 +15,12 @@
  #hud label{font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;color:#dce7f5}
  #hud a#homebtn{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(180deg,#ffc83d,#f0b429);color:#0b2340;border:1px solid #d99a10;border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:700;text-decoration:none;margin-bottom:7px;box-shadow:0 2px 8px rgba(240,180,41,.4)}
  #hud a#homebtn:hover{background:linear-gradient(180deg,#ffd45e,#f6bc33)}
- #scenes{display:flex;margin-top:8px;border:1px solid #2a4f7e;border-radius:8px;overflow:hidden}
- #scenes button{flex:1;background:#0e2744;color:#cfe0f5;border:0;border-inline-end:1px solid #2a4f7e;border-radius:0;padding:6px 5px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
- #scenes button:last-child{border-inline-end:0}
- #scenes button.on{background:var(--amber);color:#0b2340;font-weight:700}
- #scenes button:disabled{opacity:.55;cursor:default}
+ #scenes,#qmode{display:flex;margin-top:8px;border:1px solid #2a4f7e;border-radius:8px;overflow:hidden}
+ #scenes button,#qmode button{flex:1;background:#0e2744;color:#cfe0f5;border:0;border-inline-end:1px solid #2a4f7e;border-radius:0;padding:6px 5px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+ #scenes button:last-child,#qmode button:last-child{border-inline-end:0}
+ #scenes button.on,#qmode button.on{background:var(--amber);color:#0b2340;font-weight:700}
+ #scenes button:disabled,#qmode button:disabled{opacity:.55;cursor:default}
+ #qmode{margin-top:6px}
  #legend{position:fixed;left:12px;bottom:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:8px 12px;font-size:12px;box-shadow:0 2px 10px rgba(0,0,0,.2);z-index:20}
  #legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-left:6px}
  #card{position:fixed;top:10px;left:10px;width:min(90vw,320px);background:rgba(255,255,255,.975);border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.3);font-size:12.5px;display:none;overflow:hidden;z-index:30;border-top:4px solid var(--amber)}
@@ -63,6 +64,10 @@
  <div class="row">
   <label><input type="checkbox" id="roof" checked> السقف</label>
   <label><input type="checkbox" id="ghost"> إبراز المقترح شفّافًا</label>
+ </div>
+ <div id="qmode" role="group" aria-label="الجودة مقابل الأداء">
+  <button data-q="hi" class="on" aria-pressed="true" title="إضاءة محيطة (N8AO) وظلال كاملة — الأنسب للعروض">جودة عالية</button>
+  <button data-q="lo" aria-pressed="false" title="إطفاء الإضاءة المحيطة والظلال — أخفّ وأسرع على الأجهزة الضعيفة">أداء أعلى</button>
  </div>
  <div class="sub" id="stats" style="margin-top:6px"></div>
 </div>
@@ -497,6 +502,7 @@ document.querySelectorAll('#scenes button').forEach((b) => b.addEventListener('c
 
 // ---- render-on-demand ----
 let needsRender = true;
+let perfMode = false;   // quality (N8AO + shadows) vs performance (plain render, no shadows) for weak machines
 function needRender() { needsRender = true; }
 controls.addEventListener('update', needRender);
 addEventListener('resize', () => {
@@ -506,7 +512,15 @@ addEventListener('resize', () => {
 });
 // While the camera is moving we skip the N8AO pass (≈half the frame cost) for fluid
 // interaction, then render one full-quality AO frame the moment it comes to rest.
-function renderFrame(moving) { if (composer && !moving) composer.render(); else renderer.render(scene, camera); }
+function renderFrame(moving) { if (composer && !moving && !perfMode) composer.render(); else renderer.render(scene, camera); }
+// quality/performance toggle — performance mode drops N8AO + shadows for weak machines; it persists across scene switches.
+function setPerf(on) {
+  perfMode = on;
+  renderer.shadowMap.enabled = !on; renderer.shadowMap.needsUpdate = true;
+  document.querySelectorAll('#qmode button').forEach((b) => { const sel = (b.dataset.q === 'lo') === on; b.classList.toggle('on', sel); b.setAttribute('aria-pressed', String(sel)); });
+  needRender();
+}
+document.querySelectorAll('#qmode button').forEach((b) => b.addEventListener('click', () => setPerf(b.dataset.q === 'lo')));
 function animate() {
   requestAnimationFrame(animate);
   const dt = clock.getDelta();
