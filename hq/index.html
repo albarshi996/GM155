@@ -13,6 +13,8 @@
  #hud button{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:8px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
  #hud button:hover{background:#1c4a80}
  #hud label{font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;color:#dce7f5}
+ #hud a#homebtn{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(180deg,#ffc83d,#f0b429);color:#0b2340;border:1px solid #d99a10;border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:700;text-decoration:none;margin-bottom:7px;box-shadow:0 2px 8px rgba(240,180,41,.4)}
+ #hud a#homebtn:hover{background:linear-gradient(180deg,#ffd45e,#f6bc33)}
  #scenes{display:flex;margin-top:8px;border:1px solid #2a4f7e;border-radius:8px;overflow:hidden}
  #scenes button{flex:1;background:#0e2744;color:#cfe0f5;border:0;border-inline-end:1px solid #2a4f7e;border-radius:0;padding:6px 5px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
  #scenes button:last-child{border-inline-end:0}
@@ -45,6 +47,7 @@
 <canvas id="c"></canvas>
 <div id="load" role="status" aria-live="polite">…جارٍ تحميل مشهد E‑5 عالي الجودة</div>
 <div id="hud">
+ <a id="homebtn" href="../viewer.html" title="العودة إلى العارض الرئيسي — المخطط العام والمناطق الخمس">↩ العودة إلى العارض الرئيسي</a>
  <div class="ttl">أبوهادي 155 — عارض HQ</div>
  <div class="sub">E‑5 الداخلي · محرّك جديد (three r0.185 · GLB من Blender)</div>
  <div id="scenes" role="group" aria-label="اختيار المشهد">
