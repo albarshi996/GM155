@@ -13,6 +13,11 @@
  #hud button{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:8px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
  #hud button:hover{background:#1c4a80}
  #hud label{font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;color:#dce7f5}
+ #scenes{display:flex;margin-top:8px;border:1px solid #2a4f7e;border-radius:8px;overflow:hidden}
+ #scenes button{flex:1;background:#0e2744;color:#cfe0f5;border:0;border-inline-end:1px solid #2a4f7e;border-radius:0;padding:6px 5px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+ #scenes button:last-child{border-inline-end:0}
+ #scenes button.on{background:var(--amber);color:#0b2340;font-weight:700}
+ #scenes button:disabled{opacity:.55;cursor:default}
  #legend{position:fixed;left:12px;bottom:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:8px 12px;font-size:12px;box-shadow:0 2px 10px rgba(0,0,0,.2);z-index:20}
  #legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-left:6px}
  #card{position:fixed;top:10px;left:10px;width:min(90vw,320px);background:rgba(255,255,255,.975);border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.3);font-size:12.5px;display:none;overflow:hidden;z-index:30;border-top:4px solid var(--amber)}
@@ -38,10 +43,15 @@
 </script></head>
 <body>
 <canvas id="c"></canvas>
-<div id="load">…جارٍ تحميل مشهد E‑5 عالي الجودة</div>
+<div id="load" role="status" aria-live="polite">…جارٍ تحميل مشهد E‑5 عالي الجودة</div>
 <div id="hud">
  <div class="ttl">أبوهادي 155 — عارض HQ</div>
  <div class="sub">E‑5 الداخلي · محرّك جديد (three r0.185 · GLB من Blender)</div>
+ <div id="scenes" role="group" aria-label="اختيار المشهد">
+  <button data-scene="WHE5" disabled>المستودع E‑5</button>
+  <button data-scene="Z3" disabled>المبرّد · 8 أرصفة</button>
+  <button data-scene="full" disabled>الموقع الكامل</button>
+ </div>
  <div class="row">
   <button id="fit">تأطير E‑5</button>
   <button id="inside">داخل E‑5</button>
@@ -88,15 +98,22 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xcad7e4);
-const SCENE_ID = new URLSearchParams(location.search).get('scene') || 'WHE5';
-const SCENE_NAME = SCENE_ID === 'Z3' ? 'المبرّد E‑F · 8 أرصفة' : (SCENE_ID === 'full' ? 'الموقع الكامل · 5 مناطق' : 'E‑5');
-const SCENE_SHORT = SCENE_ID === 'Z3' ? 'المبرّد' : (SCENE_ID === 'full' ? 'الموقع' : 'E‑5');
-try { document.title = 'أبوهادي 155 — ' + SCENE_NAME; const _ld0 = document.getElementById('load'); if (_ld0) _ld0.textContent = '…جارٍ تحميل مشهد ' + SCENE_NAME + ' عالي الجودة'; } catch (e) {}
-// scene-aware control labels: "fit" frames the whole loaded scene; "inside E‑5" only makes sense in the E‑5 scene
-try {
-  const _fit = document.getElementById('fit'); if (_fit) _fit.textContent = 'تأطير ' + SCENE_SHORT;
-  const _ins = document.getElementById('inside'); if (_ins && SCENE_ID !== 'WHE5') _ins.style.display = 'none';
-} catch (e) {}
+let SCENE_ID = new URLSearchParams(location.search).get('scene') || 'WHE5';   // deep-link honored on first load; in-app switching never rewrites the URL
+let SCENE_NAME = '', SCENE_SHORT = '';
+const nameOf = (id) => id === 'Z3' ? 'المبرّد E‑F · 8 أرصفة' : (id === 'full' ? 'الموقع الكامل · 5 مناطق' : 'E‑5');
+const shortOf = (id) => id === 'Z3' ? 'المبرّد' : (id === 'full' ? 'الموقع' : 'E‑5');
+// scene-aware title, control labels and switcher highlight — recomputed on every scene switch
+function applySceneMeta() {
+  SCENE_NAME = nameOf(SCENE_ID); SCENE_SHORT = shortOf(SCENE_ID);
+  try {
+    document.title = 'أبوهادي 155 — ' + SCENE_NAME;
+    const _ld0 = document.getElementById('load'); if (_ld0) _ld0.textContent = '…جارٍ تحميل مشهد ' + SCENE_NAME + ' عالي الجودة';
+    const _fit = document.getElementById('fit'); if (_fit) _fit.textContent = 'تأطير ' + SCENE_SHORT;
+    const _ins = document.getElementById('inside'); if (_ins) _ins.style.display = (SCENE_ID === 'WHE5') ? '' : 'none';   // "inside E‑5" only applies to the E‑5 scene
+    document.querySelectorAll('#scenes button').forEach((b) => { const on = b.dataset.scene === SCENE_ID; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
+  } catch (e) {}
+}
+applySceneMeta();
 
 // image-based lighting: neutral room as fallback, then the real Poly Haven HDRI (CC0)
 const pmrem = new THREE.PMREMGenerator(renderer);
@@ -223,6 +240,7 @@ let usedProposed = false, usedConcept = false;
 let BOX = {};
 const elIndex = {};        // elementId -> { bm, iid, box, type, baseColor }
 let batchedGroup = null;
+let ground = null;         // shared asphalt plane — created once, repositioned per scene
 
 async function loadData() {
   try {   // committed site_scene.js (window.SCENE) → data layer works on GitHub Pages too
@@ -230,7 +248,8 @@ async function loadData() {
     const j = window.SCENE; if (j && j.boxes) for (const b of j.boxes) BOX[b.id] = b;
   } catch (e) { console.warn('site_scene.js load', e); }
 }
-async function collectGLB(url, proposed) {
+async function collectGLB(url, proposed, target) {
+  const dest = target || collected;   // switchScene passes a holding array so a failed load never touches the live scene
   const g = await loader.loadAsync(url);
   g.scene.updateWorldMatrix(true, true);
   g.scene.traverse((o) => {
@@ -239,7 +258,7 @@ async function collectGLB(url, proposed) {
     const b = BOX[id];
     const pm = pickMat(b, proposed);
     const col = (pm.tint && b && b.color) ? new THREE.Color().setRGB(b.color[0], b.color[1], b.color[2]) : null;
-    collected.push({ geometry: o.geometry, matrix: o.matrixWorld.clone(), material: pm.m, elementId: id, box: b, type: b ? b.type : '', color: col });
+    dest.push({ geometry: o.geometry, matrix: o.matrixWorld.clone(), material: pm.m, elementId: id, box: b, type: b ? b.type : '', color: col });
   });
 }
 function buildBatches() {
@@ -363,6 +382,97 @@ document.getElementById('inside').onclick=()=>{ if(roofCb) roofCb.checked=false;
   const c=fitBox.getCenter(new THREE.Vector3());
   controls.setLookAt(fitBox.min.x+3, 1.8, c.z, fitBox.max.x-4, 1.5, c.z, true); needRender(); };
 
+// ---- ground + per-scene UI (shared helpers for boot and scene-switching) ----
+function placeGround() {
+  const gc = fitBox.getCenter(new THREE.Vector3());
+  if (!ground) {
+    try {
+      const gt = loadTex('asphalt_Diffuse.jpg', true), ga = loadTex('asphalt_arm.jpg', false);
+      gt.repeat.set(120, 120); ga.repeat.set(120, 120);
+      ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800),
+        new THREE.MeshStandardMaterial({ map: gt, roughnessMap: ga, metalnessMap: ga, roughness: 0.97, metalness: 0 }));
+      ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+    } catch (e) { console.warn('ground', e); return; }
+  }
+  ground.position.set(gc.x, -0.03, gc.z); renderer.shadowMap.needsUpdate = true;
+}
+function refreshSceneUI() {
+  const _sub = document.querySelector('#hud .sub');
+  if (_sub) _sub.textContent = SCENE_NAME + ' · three r0.185 · GLB من Blender';
+  const _legend = document.getElementById('legend');
+  if (_legend) {
+    let lh = '<span class="sw" style="background:#9aa3ad"></span>الهيكل (قائم)';
+    if (usedConcept) lh += ' &nbsp;·&nbsp; <span class="sw" style="background:#5b9bd5"></span>الرفوف/التجهيزات (تصوّري)';
+    if (usedProposed) lh += ' &nbsp;·&nbsp; <span class="sw" style="background:#e8a23a"></span>التجهيزات (مقترح)';
+    _legend.innerHTML = lh;
+  }
+  const _ghost = document.getElementById('ghost'), _ghostLbl = _ghost ? _ghost.closest('label') : null;
+  if (_ghostLbl) {
+    if (!(usedProposed || usedConcept)) _ghostLbl.style.display = 'none';
+    else { _ghostLbl.style.display = ''; _ghostLbl.childNodes[_ghostLbl.childNodes.length - 1].textContent = ' إبراز غير القائم شفّافًا'; }
+  }
+  const _cats = ['قائم'].concat(usedConcept ? ['تصوّري'] : [], usedProposed ? ['مقترح'] : []).join(' + ');
+  const _st = document.getElementById('stats'); if (_st) _st.textContent = 'عناصر: ' + Object.keys(elIndex).length + ' · ' + _cats + ' · اختر عنصرًا بالنقر';
+}
+
+// ---- in-place scene switching (reuses shared materials/textures/BOX; only reloads GLBs) ----
+function teardownScene() {
+  clearSel();
+  if (batchedGroup) {
+    scene.remove(batchedGroup);
+    batchedGroup.children.forEach((bm) => { try { bm.dispose && bm.dispose(); } catch (e) {} });
+    batchedGroup = null;
+  }
+  const seen = new Set();   // dispose this scene's source geometries (new GLB load makes fresh ones)
+  for (const it of collected) { if (it.geometry && !seen.has(it.geometry.uuid)) { seen.add(it.geometry.uuid); try { it.geometry.dispose(); } catch (e) {} } }
+  collected.length = 0;
+  for (const k in elIndex) delete elIndex[k];
+  // usedProposed/usedConcept are set by the incoming load (before teardown runs), so teardown must NOT reset them here
+  // ghost() mutates these shared materials in place — restore them to opaque for the next scene
+  for (const m of [...Object.values(roleMatP), ...Object.values(roleMatC), ...PROPOSED_GENERICS]) { m.transparent = false; m.opacity = 1.0; m.depthWrite = true; m.needsUpdate = true; }
+}
+let switching = true;   // stays true until the initial boot load completes (blocks early switch clicks → no concurrent loads)
+async function switchScene(id) {
+  if (switching || id === SCENE_ID) return;   // SCENE_ID only ever names the scene actually loaded, so a failed target stays retriable
+  switching = true;
+  const btns = document.querySelectorAll('#scenes button'); btns.forEach((b) => b.disabled = true);
+  const _ld = document.getElementById('load');
+  if (_ld) { _ld.textContent = '…جارٍ تحميل مشهد ' + nameOf(id) + ' عالي الجودة'; _ld.style.display = 'flex'; }
+  await new Promise((r) => setTimeout(r, 30));   // yield so the overlay paints (rAF is paused in background tabs, so don't depend on it)
+  // load-first: fetch into a holding array; the CURRENT scene keeps rendering until the new one is fully in hand
+  const incoming = []; const _pP = usedProposed, _pC = usedConcept; usedProposed = false; usedConcept = false;
+  try {
+    await Promise.all([
+      collectGLB('models/site_built_' + id + '.opt.glb', false, incoming),
+      collectGLB('models/site_proposed_' + id + '.opt.glb', true, incoming),
+    ]);
+  } catch (e) {   // load failed → discard the half-loaded data, leave the live scene (and SCENE_ID) untouched → same button stays retriable
+    console.error('switchScene load', e);
+    const seen = new Set();
+    for (const it of incoming) { if (it.geometry && !seen.has(it.geometry.uuid)) { seen.add(it.geometry.uuid); try { it.geometry.dispose(); } catch (_) {} } }
+    usedProposed = _pP; usedConcept = _pC;
+    if (_ld) _ld.style.display = 'none';
+    const _st = document.getElementById('stats'); if (_st) _st.textContent = 'تعذّر تحميل المشهد — تحقّق من الاتصال وأعد المحاولة';
+    btns.forEach((b) => b.disabled = false); switching = false;
+    return;
+  }
+  // commit: the new scene is loaded → now tear down the old one and build the new
+  teardownScene();                              // clears `collected` (now empty)
+  for (const it of incoming) collected.push(it); // loop, not spread — incoming can be 7560 items
+  SCENE_ID = id; applySceneMeta();
+  buildBatches();
+  fitAll(false);
+  placeGround();
+  refreshSceneUI();
+  const _roof = document.getElementById('roof'); if (_roof) _roof.checked = true;     // new scene starts with roofs on
+  const _ghost = document.getElementById('ghost'); if (_ghost) _ghost.checked = false; // and ghost off
+  if (window.__hq) window.__hq.batchedGroup = batchedGroup;
+  needRender();
+  if (_ld) _ld.style.display = 'none';
+  btns.forEach((b) => b.disabled = false); switching = false;
+}
+document.querySelectorAll('#scenes button').forEach((b) => b.addEventListener('click', () => switchScene(b.dataset.scene)));
+
 // ---- render-on-demand ----
 let needsRender = true;
 function needRender() { needsRender = true; }
@@ -389,35 +499,13 @@ function animate() {
   ]);
   buildBatches();
   fitAll(false);
-  try {   // yard ground plane (asphalt CC0) under the scene
-    const gt = loadTex('asphalt_Diffuse.jpg', true), ga = loadTex('asphalt_arm.jpg', false);
-    gt.repeat.set(120, 120); ga.repeat.set(120, 120);
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800),
-      new THREE.MeshStandardMaterial({ map: gt, roughnessMap: ga, metalnessMap: ga, roughness: 0.97, metalness: 0 }));
-    ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
-    const gc = fitBox.getCenter(new THREE.Vector3()); ground.position.set(gc.x, -0.03, gc.z);
-    scene.add(ground); renderer.shadowMap.needsUpdate = true;
-  } catch (e) { console.warn('ground', e); }
-  const _sub = document.querySelector('#hud .sub');
-  if (_sub) _sub.textContent = SCENE_NAME + ' · three r0.185 · GLB من Blender';
-  // scene-aware قائم/تصوّري/مقترح legend + stats + ghost (show only categories actually present)
-  const _legend = document.getElementById('legend');
-  if (_legend) {
-    let lh = '<span class="sw" style="background:#9aa3ad"></span>الهيكل (قائم)';
-    if (usedConcept) lh += ' &nbsp;·&nbsp; <span class="sw" style="background:#5b9bd5"></span>الرفوف/التجهيزات (تصوّري)';
-    if (usedProposed) lh += ' &nbsp;·&nbsp; <span class="sw" style="background:#e8a23a"></span>التجهيزات (مقترح)';
-    _legend.innerHTML = lh;
-  }
-  const _ghost = document.getElementById('ghost'), _ghostLbl = _ghost ? _ghost.closest('label') : null;
-  if (_ghostLbl) {
-    if (!(usedProposed || usedConcept)) _ghostLbl.style.display = 'none';
-    else _ghostLbl.childNodes[_ghostLbl.childNodes.length - 1].textContent = ' إبراز غير القائم شفّافًا';
-  }
+  placeGround();
+  refreshSceneUI();
   document.getElementById('load').style.display = 'none';
-  const _cats = ['قائم'].concat(usedConcept ? ['تصوّري'] : [], usedProposed ? ['مقترح'] : []).join(' + ');
-  document.getElementById('stats').textContent = 'عناصر: ' + Object.keys(elIndex).length + ' · ' + _cats + ' · اختر عنصرًا بالنقر';
   animate();
-  window.__hq = { scene, camera, controls, renderer, composer, n8aoPass, elIndex, batchedGroup, fitAll, renderFrame, selectEl };
+  window.__hq = { scene, camera, controls, renderer, composer, n8aoPass, elIndex, batchedGroup, fitAll, renderFrame, selectEl, clearSel, switchScene };
+  switching = false;   // boot complete → enable scene switching
+  document.querySelectorAll('#scenes button').forEach((b) => b.disabled = false);
 })().catch((e) => { document.getElementById('load').textContent = 'خطأ: ' + e.message; console.error(e); });
 </script>
 </body></html>
