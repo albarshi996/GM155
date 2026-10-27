@@ -108,6 +108,71 @@ def _roughvar(m, bsdf, lo, hi, scale):
         if 'Roughness' in bsdf.inputs: nt.links.new(mr.outputs['Result'], bsdf.inputs['Roughness'])
     except Exception: pass
 
+# ---- Poly Haven CC0 PBR (world-space box projection; for Cycles stills) ----
+PH = bool(os.environ.get("PH"))
+_PH_TEX = os.path.join(os.path.dirname(JSON_PATH), "hq", "assets", "textures")
+_PH_HDR = os.path.join(os.path.dirname(JSON_PATH), "hq", "assets", "hdri")
+PH_ROLE = {"floor":"floor","zonefloor":"floor","concrete":"floor","apron":"floor",
+           "wall":"wall","building":"wall","office":"wall","cold":"wall",
+           "rack_up":"rackmetal","rack_bm":"rackmetal",
+           "roof":"roofmetal","roof2":"roofmetal",
+           "road":"asphalt","ground":"asphalt","yard":"asphalt"}
+PH_TILE = {"floor":3.0,"wall":3.0,"rackmetal":1.6,"roofmetal":2.4,"asphalt":6.0}
+def _find_tex(role, mapname):
+    for ext in ("jpg","png","exr"):
+        p=os.path.join(_PH_TEX, f"{role}_{mapname}.{ext}")
+        if os.path.exists(p): return p
+    return None
+def _find_hdri():
+    for ext in ("hdr","exr"):
+        p=os.path.join(_PH_HDR, f"hdri.{ext}")
+        if os.path.exists(p): return p
+    return None
+def pbr_ph(m, bsdf, btype):
+    """خامة PBR من خرائط Poly Haven، إسقاط صندوقي بإحداثيات عالمية → تبليط بمقياس واقعي بلا UV."""
+    role=PH_ROLE[btype]; tile=PH_TILE.get(role,3.0); nt=m.node_tree
+    pos=nt.nodes.new('ShaderNodeNewGeometry')
+    mp=nt.nodes.new('ShaderNodeMapping')
+    try: mp.inputs['Scale'].default_value=(1.0/tile,1.0/tile,1.0/tile)
+    except Exception: pass
+    nt.links.new(pos.outputs['Position'], mp.inputs['Vector'])
+    def img(mapname, noncolor):
+        p=_find_tex(role,mapname)
+        if not p: return None
+        try: im=bpy.data.images.load(p, check_existing=True)
+        except Exception: return None
+        t=nt.nodes.new('ShaderNodeTexImage'); t.image=im
+        try: t.projection='BOX'; t.projection_blend=0.3
+        except Exception: pass
+        if noncolor:
+            try: im.colorspace_settings.name='Non-Color'
+            except Exception: pass
+        nt.links.new(mp.outputs['Vector'], t.inputs['Vector']); return t
+    d=img('Diffuse',False)
+    if d: nt.links.new(d.outputs['Color'], bsdf.inputs['Base Color'])
+    a=img('arm',True)
+    if a:
+        sep=nt.nodes.new('ShaderNodeSeparateColor')
+        nt.links.new(a.outputs['Color'], sep.inputs['Color'])
+        if role=='floor':                       # إيبوكسي: خشونة منخفضة + طلاء لامع (محاكاة موثّقة)
+            mr=nt.nodes.new('ShaderNodeMapRange')
+            try: mr.inputs['To Min'].default_value=0.14; mr.inputs['To Max'].default_value=0.40
+            except Exception: pass
+            nt.links.new(sep.outputs['Green'], mr.inputs['Value'])
+            if 'Roughness' in bsdf.inputs: nt.links.new(mr.outputs['Result'], bsdf.inputs['Roughness'])
+            sin(bsdf, ["Coat Weight","Clearcoat"], 0.22)
+        elif 'Roughness' in bsdf.inputs:
+            nt.links.new(sep.outputs['Green'], bsdf.inputs['Roughness'])
+    if role in ('rackmetal','roofmetal'): sin(bsdf, ["Metallic"], 0.7)
+    n=img('nor_gl',True)
+    if n:
+        nm=nt.nodes.new('ShaderNodeNormalMap')
+        try: nm.inputs['Strength'].default_value=0.75
+        except Exception: pass
+        nt.links.new(n.outputs['Color'], nm.inputs['Color'])
+        nt.links.new(nm.outputs['Normal'], bsdf.inputs['Normal'])
+    return True
+
 _matcache = {}
 def mat_for(btype, col):
     key = (btype, tuple(round(c,3) for c in col))
@@ -116,7 +181,9 @@ def mat_for(btype, col):
     bsdf = m.node_tree.nodes.get("Principled BSDF")
     r,g,bl = col
     sin(bsdf, ["Base Color"], (r,g,bl,1.0))
-    if btype == "glass":
+    if PH and btype in PH_ROLE and _find_tex(PH_ROLE[btype], 'Diffuse'):
+        pbr_ph(m, bsdf, btype)
+    elif btype == "glass":
         sin(bsdf, ["Transmission Weight","Transmission"], 0.9)
         sin(bsdf, ["Roughness"], 0.05); sin(bsdf, ["IOR"], 1.45)
         m.use_screen_refraction = True
@@ -185,6 +252,7 @@ def build():
         px,py,pz = b["position_m"]; sx,sy,sz = b["dimensions_m"]; col = b["color"]
         me = cyl if bt == "cylinder" else (sph if (bt=="tree" and sx>1.3 and sy>1.3 and abs(sx-sy)<1.5) else cube)
         ob = bpy.data.objects.new(b["id"], me)
+        ob["elementId"] = b["id"]      # authoritative join key → glTF node extras (survives name .001 collisions)
         ob.location = (px + sx/2.0, py + sy/2.0, pz + sz/2.0)
         ob.scale = (sx, sy, sz)
         rot = b.get("rotation", 0)
@@ -199,13 +267,23 @@ def build():
     w = bpy.data.worlds.new("Sky"); scn.world = w; w.use_nodes = True
     nt = w.node_tree
     for nd in list(nt.nodes): nt.nodes.remove(nd)
-    sky = nt.nodes.new("ShaderNodeTexSky")
-    try:
-        sky.sky_type = 'NISHITA'; sky.sun_elevation = math.radians(52); sky.sun_rotation = math.radians(40)
-    except Exception: pass
-    bg = nt.nodes.new("ShaderNodeBackground"); bg.inputs["Strength"].default_value = 0.36
+    sky = None
+    bg = nt.nodes.new("ShaderNodeBackground")
     out = nt.nodes.new("ShaderNodeOutputWorld")
-    nt.links.new(sky.outputs[0], bg.inputs[0]); nt.links.new(bg.outputs[0], out.inputs[0])
+    _hdri = _find_hdri() if PH else None
+    if _hdri:                                   # إضاءة بيئية واقعية من HDRI (Poly Haven CC0)
+        env = nt.nodes.new("ShaderNodeTexEnvironment")
+        try: env.image = bpy.data.images.load(_hdri, check_existing=True)
+        except Exception: pass
+        bg.inputs["Strength"].default_value = 1.0
+        nt.links.new(env.outputs[0], bg.inputs[0])
+    else:
+        sky = nt.nodes.new("ShaderNodeTexSky")
+        try: sky.sky_type = 'NISHITA'; sky.sun_elevation = math.radians(52); sky.sun_rotation = math.radians(40)
+        except Exception: pass
+        bg.inputs["Strength"].default_value = 0.36
+        nt.links.new(sky.outputs[0], bg.inputs[0])
+    nt.links.new(bg.outputs[0], out.inputs[0])
     if os.environ.get("VOL"):   # faint atmospheric haze → visible light beams (interior hero shots)
         vs = nt.nodes.new("ShaderNodeVolumeScatter"); vs.inputs["Density"].default_value = 0.0025
         try: vs.inputs["Anisotropy"].default_value = 0.35
@@ -288,7 +366,7 @@ def build():
 
 def render_all(outdir=None, only=None):
     if outdir is None:
-        outdir = os.path.normpath(os.path.join(os.path.dirname(JSON_PATH), "..", "renders_blender"))
+        outdir = os.environ.get("RENDER_OUT") or os.path.normpath(os.path.join(os.path.dirname(JSON_PATH), "..", "renders_blender"))
     os.makedirs(outdir, exist_ok=True)
     scn = bpy.context.scene
     roofs = bpy.data.collections.get("Roofs")
@@ -306,12 +384,49 @@ def render_all(outdir=None, only=None):
         print("rendered", co.name, "->", scn.render.filepath)
     print("[Abuhadi155] تم — اللقطات في:", outdir)
 
+def export_glb(outdir=None, prefix=None, suffix=""):
+    """صدّر GLB للويب: ملف «قائم» (Main+Roofs) وملف «مقترح» (Proposed) منفصلين، مع حفظ
+    اسم كل عقدة = id وخاصية elementId في extras. prefix يقصر التصدير على مجموعة (مثل E-5)."""
+    try: bpy.ops.preferences.addon_enable(module='io_scene_gltf2')
+    except Exception: pass
+    if outdir is None:
+        outdir = os.path.join(os.path.dirname(JSON_PATH), "hq", "models")
+    os.makedirs(outdir, exist_ok=True)
+    def incoll(o, names): return bool(o.users_collection) and o.users_collection[0].name in names
+    def match(o):
+        if o.type != 'MESH' or o.name == 'horizon': return False
+        if not prefix: return True
+        eid = str(o.get('elementId') or o.name)
+        return any(eid.startswith(p) for p in prefix.split(","))
+    built = [o for o in bpy.data.objects if match(o) and incoll(o, ('Main','Roofs'))]
+    prop  = [o for o in bpy.data.objects if match(o) and incoll(o, ('Proposed',))]
+    def do_export(objs, fname):
+        bpy.ops.object.select_all(action='DESELECT')
+        for o in objs: o.select_set(True)
+        if objs: bpy.context.view_layer.objects.active = objs[0]
+        fp = os.path.join(outdir, fname)
+        bpy.ops.export_scene.gltf(filepath=fp, export_format='GLB', use_selection=True,
+            export_extras=True, export_apply=False, export_yup=True,
+            export_cameras=False, export_lights=False, export_materials='EXPORT')
+        sz = os.path.getsize(fp) if os.path.exists(fp) else 0
+        print(f"[glb] {fname}: {len(objs)} objects, {sz} bytes -> {fp}")
+        return fp, len(objs)
+    do_export(built, f"site_built{suffix}.glb")
+    do_export(prop,  f"site_proposed{suffix}.glb")
+    print(f"[glb] DONE built={len(built)} proposed={len(prop)} prefix={prefix!r}")
+
 if __name__ == "__main__":
     import sys
     build()
-    # وسائط بعد "--": أسماء مشاهد للإخراج، أو "all" للكل (يُجبر Cycles للإخراج بلا واجهة)
+    # وسائط بعد "--": "glb [prefix=E-5]" للتصدير، أو أسماء مشاهد/"all" للإخراج (يُجبر Cycles بلا واجهة)
     _argv = sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else []
-    if _argv:
+    _flags0 = [a.lower() for a in _argv]
+    if "glb" in _flags0 or "export" in _flags0:
+        _pref = next((a.split("=",1)[1] for a in _argv if a.startswith("prefix=")), None)
+        _suf0 = next((a.split("=",1)[1] for a in _argv if a.startswith("suffix=")), None)
+        _suf  = ("_"+_suf0) if _suf0 else (("_"+(_pref or "").replace("-","").replace(",","").replace(" ","")) if _pref else "")
+        export_glb(prefix=_pref, suffix=_suf)
+    elif _argv:
         _scn = bpy.context.scene
         _flags = [a.lower() for a in _argv]
         if "cycles" in _flags:                                  # اطلب Cycles صراحةً للجودة القصوى

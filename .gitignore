@@ -5,3 +5,15 @@ warehouse155_site.obj
 warehouse155_site.mtl
 saveserver.py
 README_أدوات_3D.md
+# --- HQ realism track: publish only the preview runtime, not build artifacts ---
+hq/node_modules/
+hq/package-lock.json
+hq/models/*.glb
+!hq/models/*.opt.glb
+hq/assets/textures/*_nor_gl.png
+hq/build/_phcheck.py
+hq/build/_cdntest.jpg
+hq/build/_ph_test.json
+renders_hq/
+renders_blender/
+خطة_البيئة_الواقعية_HQ.md

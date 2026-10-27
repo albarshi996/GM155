@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مخازن أبوهادي 155 — عارض HQ (E‑5)</title>
+<style>
+ :root{--navy:#0B2340;--amber:#f0b429}
+ html,body{margin:0;height:100%;background:#aeb6bd;font-family:Tahoma,"Segoe UI",Arial;color:#0b1f3a;overflow:hidden}
+ #c{display:block;width:100vw;height:100vh;outline:none}
+ #hud{position:fixed;top:10px;right:10px;background:rgba(11,31,58,.94);color:#fff;border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.35);padding:9px 12px;z-index:20;max-width:min(92vw,330px)}
+ #hud .ttl{font-weight:700;color:var(--amber);font-size:14px}
+ #hud .sub{font-size:11px;color:#9fb3d0;margin-top:2px}
+ #hud .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+ #hud button{background:#13335c;color:#fff;border:1px solid #2a4f7e;border-radius:8px;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer}
+ #hud button:hover{background:#1c4a80}
+ #hud label{font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;color:#dce7f5}
+ #legend{position:fixed;left:12px;bottom:12px;background:rgba(255,255,255,.94);border-radius:10px;padding:8px 12px;font-size:12px;box-shadow:0 2px 10px rgba(0,0,0,.2);z-index:20}
+ #legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-left:6px}
+ #card{position:fixed;top:10px;left:10px;width:min(90vw,320px);background:rgba(255,255,255,.975);border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.3);font-size:12.5px;display:none;overflow:hidden;z-index:30;border-top:4px solid var(--amber)}
+ #card .h{background:var(--navy);color:#fff;padding:8px 11px;display:flex;align-items:center;gap:7px}
+ #card .h b{font-size:14px;color:var(--amber);margin-left:auto;text-align:right;line-height:1.3}
+ #card .h button{background:#13335c;border:0;color:#fff;border-radius:6px;cursor:pointer;padding:3px 8px}
+ #card .b{padding:9px 12px;line-height:1.55}
+ #card .r{margin:4px 0;display:flex;gap:7px}
+ #card .r .k{color:#5a6676;min-width:58px;font-weight:700}
+ .cls{display:inline-block;border-radius:5px;padding:1px 8px;font-weight:700;font-size:11px;color:#fff}
+ #load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#aeb6bd;z-index:50;color:#0b2340;font-size:15px;font-weight:700}
+</style>
+<script type="importmap">
+{"imports":{
+ "three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js",
+ "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/",
+ "three/examples/jsm/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/",
+ "camera-controls":"https://cdn.jsdelivr.net/npm/camera-controls@3.1.2/dist/camera-controls.module.js",
+ "three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.16/build/index.module.js",
+ "postprocessing":"https://cdn.jsdelivr.net/npm/postprocessing@6.39.5/build/index.js",
+ "n8ao":"https://cdn.jsdelivr.net/npm/n8ao@2.0.1/dist/N8AO.js"
+}}
+</script></head>
+<body>
+<canvas id="c"></canvas>
+<div id="load">…جارٍ تحميل مشهد E‑5 عالي الجودة</div>
+<div id="hud">
+ <div class="ttl">أبوهادي 155 — عارض HQ</div>
+ <div class="sub">E‑5 الداخلي · محرّك جديد (three r0.185 · GLB من Blender)</div>
+ <div class="row">
+  <button id="fit">تأطير E‑5</button>
+  <button id="inside">داخل E‑5</button>
+  <button id="top">منظر علوي</button>
+ </div>
+ <div class="row">
+  <label><input type="checkbox" id="roof" checked> السقف</label>
+  <label><input type="checkbox" id="ghost"> إبراز المقترح شفّافًا</label>
+ </div>
+ <div class="sub" id="stats" style="margin-top:6px"></div>
+</div>
+<div id="legend">
+ <span class="sw" style="background:#9aa3ad"></span>الهيكل (قائم)
+ &nbsp;·&nbsp; <span class="sw" style="background:#e8a23a"></span>الرفوف/التجهيزات (مقترح)
+</div>
+<div id="card"><div class="h"><button id="cx">✕</button><b id="ct">—</b></div><div class="b" id="cb"></div></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import CameraControls from 'camera-controls';
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { N8AOPass } from 'n8ao';
+
+CameraControls.install({ THREE });
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+let _maxDPR = 2;
+try { const _gl = renderer.getContext(); const _dbg = _gl.getExtension('WEBGL_debug_renderer_info'); const _r = _dbg ? String(_gl.getParameter(_dbg.UNMASKED_RENDERER_WEBGL)) : ''; if (/intel|uhd|iris/i.test(_r)) _maxDPR = 1.5; } catch (e) {}
+renderer.setPixelRatio(Math.min(devicePixelRatio, _maxDPR));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xcad7e4);
+const SCENE_ID = new URLSearchParams(location.search).get('scene') || 'WHE5';
+const SCENE_NAME = SCENE_ID === 'Z3' ? 'المبرّد E‑F · 8 أرصفة' : 'E‑5';
+try { document.title = 'أبوهادي 155 — ' + SCENE_NAME; const _ld0 = document.getElementById('load'); if (_ld0) _ld0.textContent = '…جارٍ تحميل مشهد ' + SCENE_NAME + ' عالي الجودة'; } catch (e) {}
+
+// image-based lighting: neutral room as fallback, then the real Poly Haven HDRI (CC0)
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+new RGBELoader().load('assets/hdri/hdri.hdr', (hdr) => {
+  hdr.mapping = THREE.EquirectangularReflectionMapping;
+  const env = pmrem.fromEquirectangular(hdr).texture;
+  scene.environment = env; scene.background = env;
+  hdr.dispose(); needRender();
+}, undefined, (e) => console.warn('HDRI load failed', e));
+function tuneMat(m, type) {
+  if (!m) return;
+  if (['floor','zonefloor','concrete','apron'].includes(type)) { m.roughness=0.22; m.metalness=0.0; m.envMapIntensity=1.15; }
+  else if (['rack_up','rack_bm'].includes(type)) { m.metalness=0.85; m.roughness=0.38; m.envMapIntensity=1.0; }
+  else if (type==='col') { m.metalness=0.3; m.roughness=0.5; }
+  else if (['roof','roof2'].includes(type)) { m.metalness=0.55; m.roughness=0.5; }
+  else if (['wall','building','office','cold'].includes(type)) { m.roughness=0.9; m.metalness=0.0; }
+  else if (['load','pallet'].includes(type)) { m.roughness=0.7; }
+  else if (['truck','car','fork','gen','tank'].includes(type)) { m.metalness=0.3; m.roughness=0.45; }
+  m.needsUpdate = true;
+}
+
+// ---- triplanar CC0 PBR (Poly Haven) per element type — box geometry → world-space projection, no UVs ----
+const _texLoader = new THREE.TextureLoader();
+function loadTex(file, srgb) {
+  const t = _texLoader.load('assets/textures/' + file, needRender, undefined, () => console.warn('tex fail', file));
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 4;
+  return t;
+}
+function makeTriplanar(o) {
+  const m = new THREE.MeshStandardMaterial({ map: o.map || null, roughnessMap: o.arm || null, metalnessMap: o.arm || null,
+    roughness: o.roughness != null ? o.roughness : 1, metalness: o.metalness != null ? o.metalness : 0, color: 0xffffff, envMapIntensity: o.env || 1.1 });
+  const S = o.scale || 0.33;
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uTriS = { value: S };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vWP;\nvarying vec3 vWN;')
+      .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP=(modelMatrix*vec4(transformed,1.0)).xyz;\nvWN=normalize(mat3(modelMatrix)*objectNormal);');
+    const fn = '\nvarying vec3 vWP;\nvarying vec3 vWN;\nuniform float uTriS;\nvec3 triW(vec3 n){vec3 b=abs(n);b=pow(b,vec3(4.0));return b/max(b.x+b.y+b.z,1e-4);}\nvec4 triT(sampler2D s,vec3 p,vec3 w){return texture2D(s,p.zy)*w.x+texture2D(s,p.xz)*w.y+texture2D(s,p.xy)*w.z;}\n';
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>' + fn)
+      .replace('#include <map_fragment>', '#ifdef USE_MAP\n vec3 _p=vWP*uTriS; vec3 _w=triW(normalize(vWN));\n vec4 sampledDiffuseColor=triT(map,_p,_w);\n diffuseColor*=sampledDiffuseColor;\n#endif')
+      .replace('#include <roughnessmap_fragment>', 'float roughnessFactor=roughness;\n vec4 _arm=vec4(1.0);\n#ifdef USE_ROUGHNESSMAP\n _arm=triT(roughnessMap,vWP*uTriS,triW(normalize(vWN)));\n roughnessFactor*=_arm.g;\n#endif')
+      .replace('#include <metalnessmap_fragment>', 'float metalnessFactor=metalness;\n#ifdef USE_METALNESSMAP\n metalnessFactor*=_arm.b;\n#endif');
+  };
+  return m;
+}
+const _rt = {
+  floor:     { d: 'floor_Diffuse.jpg', scale: 1 / 2.5, roughness: 0.26, metalness: 0, env: 1.35 },      // reflective epoxy (no roughnessMap)
+  wall:      { d: 'wall_Diffuse.jpg', a: 'wall_arm.jpg', scale: 1 / 3.0, roughness: 0.92, metalness: 0 },
+  rackmetal: { d: 'rackmetal_Diffuse.jpg', a: 'rackmetal_arm.jpg', scale: 1 / 1.2, roughness: 0.5, metalness: 0.75, env: 1.0 },
+  roofmetal: { d: 'roofmetal_Diffuse.jpg', a: 'roofmetal_arm.jpg', scale: 1 / 2.4, roughness: 0.55, metalness: 0.6 },
+};
+const roleMat = {}, roleMatP = {}, roleMatC = {};
+for (const r in _rt) {
+  const c = _rt[r]; const map = loadTex(c.d, true); const arm = c.a ? loadTex(c.a, false) : null;
+  const mk = () => makeTriplanar({ map, arm, scale: c.scale, roughness: c.roughness, metalness: c.metalness, env: c.env });
+  roleMat[r] = mk();
+  const p = mk(); p.emissive = new THREE.Color(0xe8781f); p.emissiveIntensity = 0.08; roleMatP[r] = p;      // مقترح
+  const cc = mk(); cc.emissive = new THREE.Color(0x5b9bd5); cc.emissiveIntensity = 0.06; roleMatC[r] = cc;   // تصوّري
+}
+const TYPE_ROLE = { floor:'floor', zonefloor:'floor', concrete:'floor', apron:'floor',
+  wall:'wall', building:'wall', office:'wall', cold:'wall',
+  rack_up:'rackmetal', rack_bm:'rackmetal', col:'rackmetal', roof:'roofmetal', roof2:'roofmetal' };
+
+scene.add(new THREE.HemisphereLight(0xbcd6f2, 0x5b5750, 0.55));
+scene.add(new THREE.AmbientLight(0xffffff, 0.12));
+const sun = new THREE.DirectionalLight(0xfff0db, 2.2);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
+scene.add(sun); scene.add(sun.target);
+
+const clock = new THREE.Clock();
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 5000);
+camera.position.set(40, 20, 40);
+const controls = new CameraControls(camera, canvas);
+controls.dollyToCursor = true; controls.minDistance = 1; controls.maxDistance = 600;
+
+// ---- post: N8AO contact shadows (defensive — falls back to direct render on failure) ----
+let composer = null, n8aoPass = null;
+try {
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  n8aoPass = new N8AOPass(scene, camera, innerWidth, innerHeight);
+  n8aoPass.configuration.aoRadius = 0.6;
+  n8aoPass.configuration.distanceFalloff = 1.0;
+  n8aoPass.configuration.intensity = 2.2;
+  if (n8aoPass.configuration.color && n8aoPass.configuration.color.set) n8aoPass.configuration.color.set(0, 0, 0);
+  if (n8aoPass.setQualityMode) n8aoPass.setQualityMode('Performance');
+  n8aoPass.configuration.halfRes = true;
+  n8aoPass.configuration.gammaCorrection = false;
+  composer.addPass(n8aoPass);
+  composer.addPass(new OutputPass());
+} catch (e) { console.warn('N8AO init failed → direct render', e); composer = null; }
+
+// ---- load the E-5 GLBs (built shell + proposed fit-out) ----
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+const meshById = {};
+const proposedMats = [];
+let usedProposed = false, usedConcept = false;
+let builtGroup, propGroup;
+const CAST = new Set(['WHE']); // everything casts for now
+
+function registerIds(root, proposed) {
+  root.traverse((o) => {
+    if (o.isMesh) {
+      o.castShadow = true; o.receiveShadow = true;
+      const _id = (o.userData && o.userData.elementId) || o.name;
+      const _b = BOX[_id]; const _role = _b && TYPE_ROLE[_b.type];
+      const _concept = _b && classify(_b).t.indexOf('تصوّري') >= 0;
+      if (_role) {
+        if (proposed) { o.material = roleMatP[_role]; usedProposed = true; }
+        else if (_concept) { o.material = roleMatC[_role]; usedConcept = true; }
+        else o.material = roleMat[_role];
+      } else {
+        if (_b) tuneMat(o.material, _b.type);
+        if (proposed) {
+          o.material = o.material.clone();
+          o.material.emissive = new THREE.Color(0xe8781f);
+          o.material.emissiveIntensity = 0.10;
+          proposedMats.push(o.material); usedProposed = true;
+        }
+      }
+      if (o.geometry && !o.geometry.boundsTree) { try { o.geometry.computeBoundsTree(); } catch (e) {} }
+    }
+    const id = (o.userData && o.userData.elementId) || o.name;
+    if (id) meshById[id] = o;
+  });
+}
+
+async function loadGLB(url, proposed) {
+  const g = await loader.loadAsync(url);
+  registerIds(g.scene, proposed);
+  scene.add(g.scene);
+  return g.scene;
+}
+
+// ---- box metadata from the SAME data layer (site_scene.json) ----
+let BOX = {};
+async function loadData() {
+  try {   // use the committed site_scene.js (window.SCENE) so the data layer works on GitHub Pages too
+    await new Promise((res, rej) => { const s = document.createElement('script'); s.src = '../site_scene.js?v=' + Date.now(); s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+    const j = window.SCENE;
+    if (j && j.boxes) for (const b of j.boxes) BOX[b.id] = b;
+  } catch (e) { console.warn('site_scene.js load', e); }
+}
+
+function classify(b) {
+  if (!b) return { t: 'عنصر', c: '#5b9bd5' };
+  if (b.state === 'proposed') return { t: 'تجهيز مقترح (متطلبات)', c: '#e8781f' };
+  const g = b.group || '';
+  if ((g.indexOf('WH') === 0 || g === 'cold' || g === 'site') &&
+      ['wall','floor','roof','roof2','door','building','office','cold','zonefloor','col','glass','road','fence','apron','concrete'].includes(b.type))
+    return { t: 'قائم — تمثيل المخطط', c: '#2fa757' };
+  return { t: 'تصوّري', c: '#5b9bd5' };
+}
+const TYPE_AR = { wall:'جدار', floor:'أرضية', zonefloor:'أرضية منطقة', roof:'سقف', roof2:'سقف', glass:'زجاج', door:'باب', dockdoor:'تجهيز رصيف/باب', rack_up:'قائم رف', rack_bm:'عارضة رف', load:'طبلية بضاعة', pallet:'طبلية', col:'عمود', light:'إضاءة علوية', building:'مبنى', office:'مبنى مكتبي', cold:'عنصر تبريد', canopy:'مظلة', fork:'رافعة شوكية', forkdark:'جزء معدات', person:'عامل', concrete:'خرسانة', apron:'منصّة', lane:'خط ممر' };
+
+// ---- selection ----
+const ray = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+let selMesh = null, selOrigMat = null, selBox = null;
+const card = document.getElementById('card'), ct = document.getElementById('ct'), cb = document.getElementById('cb');
+function clearSel() {
+  if (selMesh && selOrigMat) { if (selMesh.material !== selOrigMat) selMesh.material.dispose(); selMesh.material = selOrigMat; selOrigMat = null; }
+  if (selBox) { selBox.geometry.dispose(); selBox.material.dispose(); scene.remove(selBox); selBox = null; }
+  selMesh = null; card.style.display = 'none'; needRender();
+}
+function row(k, v) { return '<div class="r"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; }
+function select(mesh) {
+  clearSel();
+  selMesh = mesh; selOrigMat = mesh.material;        // private clone for the highlight → never mutate the shared role material
+  const m = mesh.material.clone(); mesh.material = m;
+  m.emissive = new THREE.Color(0xf0b429); m.emissiveIntensity = 0.5;
+  selBox = new THREE.BoxHelper(mesh, 0xf0b429); scene.add(selBox);
+  const id = (mesh.userData && mesh.userData.elementId) || mesh.name;
+  const b = BOX[id];
+  const cl = classify(b);
+  let nm = b && b.label ? b.label.split('—')[0].split('·')[0].trim() : (b ? (TYPE_AR[b.type] || b.type) : id);
+  ct.textContent = (nm || id).slice(0, 44);
+  let h = row('المعرّف', id);
+  if (b) {
+    h += row('النوع', (TYPE_AR[b.type] || b.type) + (b.group ? ' · ' + b.group : ''));
+    if (b.label) h += row('الوصف', b.label);
+    h += '<div class="r"><span class="k">التصنيف</span><span class="v"><span class="cls" style="background:' + cl.c + '">' + cl.t + '</span></span></div>';
+    if (b.system) h += row('المنظومة', b.system);
+  }
+  cb.innerHTML = h; card.style.display = 'block'; needRender();
+}
+canvas.addEventListener('pointerup', (e) => {
+  if (e._moved) return;
+  ndc.x = (e.clientX / innerWidth) * 2 - 1; ndc.y = -(e.clientY / innerHeight) * 2 + 1;
+  ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects([builtGroup, propGroup].filter(Boolean), true);
+  if (hits.length) select(hits[0].object); else clearSel();
+});
+let downX, downY;
+canvas.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
+canvas.addEventListener('pointerup', (e) => { e._moved = Math.hypot(e.clientX - downX, e.clientY - downY) > 6; }, true);
+document.getElementById('cx').onclick = clearSel;
+
+// ---- fit / framing ----
+const fitBox = new THREE.Box3();
+function fitAll(transition) {
+  fitBox.makeEmpty();
+  if (builtGroup) fitBox.expandByObject(builtGroup);
+  if (propGroup) fitBox.expandByObject(propGroup);
+  const c = fitBox.getCenter(new THREE.Vector3()), s = fitBox.getSize(new THREE.Vector3());
+  const d = Math.max(s.x, s.z) * 0.62 + s.y * 2;
+  controls.setLookAt(c.x + d * 0.75, c.y + Math.max(s.y * 3, d * 0.55), c.z + d * 0.75, c.x, c.y, c.z, !!transition);
+  sun.position.set(c.x + s.x, c.y + s.y * 2 + 30, c.z + s.z * 0.6);
+  sun.target.position.copy(c);
+  const r = s.length();
+  sun.shadow.camera.left = -r; sun.shadow.camera.right = r; sun.shadow.camera.top = r; sun.shadow.camera.bottom = -r;
+  sun.shadow.camera.near = 1; sun.shadow.camera.far = r * 4; sun.shadow.camera.updateProjectionMatrix();
+  renderer.shadowMap.needsUpdate = true; needRender();
+}
+document.getElementById('fit').onclick = () => fitAll(true);
+document.getElementById('top').onclick = () => {
+  const c = fitBox.getCenter(new THREE.Vector3()), s = fitBox.getSize(new THREE.Vector3());
+  controls.setLookAt(c.x, c.y + s.length(), c.z + 0.001, c.x, c.y, c.z, true); needRender();
+};
+document.getElementById('ghost').onchange = (e) => {
+  const on = e.target.checked;
+  for (const m of [...proposedMats, ...Object.values(roleMatP), ...Object.values(roleMatC)]) { m.transparent = on; m.opacity = on ? 0.45 : 1.0; m.depthWrite = !on; m.needsUpdate = true; }
+  renderer.shadowMap.needsUpdate = true; needRender();
+};
+function setRoof(on){ for(const id in meshById){ const b=BOX[id]; if(b && b.type==='roof'){ meshById[id].visible=on; } } renderer.shadowMap.needsUpdate = true; needRender(); }
+const roofCb=document.getElementById('roof'); if(roofCb) roofCb.onchange=(e)=>setRoof(e.target.checked);
+document.getElementById('inside').onclick=()=>{ if(roofCb) roofCb.checked=false; setRoof(false);
+  const c=fitBox.getCenter(new THREE.Vector3());
+  controls.setLookAt(fitBox.min.x+3, 1.8, c.z, fitBox.max.x-4, 1.5, c.z, true); needRender(); };
+
+// ---- render-on-demand ----
+let needsRender = true;
+function needRender() { needsRender = true; }
+controls.addEventListener('update', needRender);
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  if (composer) composer.setSize(innerWidth, innerHeight);
+  needRender();
+});
+function renderFrame() { if (composer) composer.render(); else renderer.render(scene, camera); }
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  const updated = controls.update(dt);
+  if (updated || needsRender) { needsRender = false; renderFrame(); }
+}
+
+// ---- boot ----
+(async () => {
+  await loadData();
+  [builtGroup, propGroup] = await Promise.all([
+    loadGLB('models/site_built_' + SCENE_ID + '.opt.glb', false),
+    loadGLB('models/site_proposed_' + SCENE_ID + '.opt.glb', true),
+  ]);
+  fitAll(false);
+  try {   // yard ground plane (asphalt CC0) under the scene
+    const gt = loadTex('asphalt_Diffuse.jpg', true), ga = loadTex('asphalt_arm.jpg', false);
+    gt.repeat.set(120, 120); ga.repeat.set(120, 120);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(800, 800),
+      new THREE.MeshStandardMaterial({ map: gt, roughnessMap: ga, metalnessMap: ga, roughness: 0.97, metalness: 0 }));
+    ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+    const gc = fitBox.getCenter(new THREE.Vector3()); ground.position.set(gc.x, -0.03, gc.z);
+    scene.add(ground); renderer.shadowMap.needsUpdate = true;
+  } catch (e) { console.warn('ground', e); }
+  const _sub = document.querySelector('#hud .sub');
+  if (_sub) _sub.textContent = SCENE_NAME + ' · three r0.185 · GLB من Blender';
+  // scene-aware قائم/تصوّري/مقترح legend + stats + ghost (show only categories actually present)
+  const _legend = document.getElementById('legend');
+  if (_legend) {
+    let lh = '<span class="sw" style="background:#9aa3ad"></span>الهيكل (قائم)';
+    if (usedConcept) lh += ' &nbsp;·&nbsp; <span class="sw" style="background:#5b9bd5"></span>الرفوف/التجهيزات (تصوّري)';
+    if (usedProposed) lh += ' &nbsp;·&nbsp; <span class="sw" style="background:#e8a23a"></span>التجهيزات (مقترح)';
+    _legend.innerHTML = lh;
+  }
+  const _ghost = document.getElementById('ghost'), _ghostLbl = _ghost ? _ghost.closest('label') : null;
+  if (_ghostLbl) {
+    if (!(usedProposed || usedConcept)) _ghostLbl.style.display = 'none';
+    else _ghostLbl.childNodes[_ghostLbl.childNodes.length - 1].textContent = ' إبراز غير القائم شفّافًا';
+  }
+  document.getElementById('load').style.display = 'none';
+  const _cats = ['قائم'].concat(usedConcept ? ['تصوّري'] : [], usedProposed ? ['مقترح'] : []).join(' + ');
+  document.getElementById('stats').textContent = 'عناصر: ' + Object.keys(meshById).length + ' · ' + _cats + ' · اختر عنصرًا بالنقر';
+  animate();
+  window.__hq = { scene, camera, controls, renderer, composer, n8aoPass, meshById, fitAll, renderFrame };
+})().catch((e) => { document.getElementById('load').textContent = 'خطأ: ' + e.message; console.error(e); });
+</script>
+</body></html>
