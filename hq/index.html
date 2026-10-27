@@ -189,7 +189,7 @@ sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
 scene.add(sun); scene.add(sun.target);
 
 const clock = new THREE.Clock();
-const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 5000);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 1.0, 3000);
 camera.position.set(40, 20, 40);
 const controls = new CameraControls(camera, canvas);
 controls.dollyToCursor = true; controls.minDistance = 1; controls.maxDistance = 600;
@@ -349,7 +349,22 @@ document.getElementById('cx').onclick = clearSel;
 // ---- fit / framing ----
 const fitBox = new THREE.Box3();
 const _CTX_RE = /^(ctx_|desert|horizon|ground)/;
+// Per-scene depth range. A tight near/far ratio keeps the depth buffer precise, so the
+// many near-coplanar ground strips (pad · lanes · roads) stop z-fighting across the 460m site.
+// WHE5 needs a small near for the interior walk-through; the site-scale views can afford a larger one.
+function applyDepthRange() {
+  // near/far: a tight ratio keeps depth precise so coplanar ground strips stop z-fighting.
+  // minD/maxD (per-scene too): keep minDistance > near so dolly-in never clips at the near plane,
+  // and cap the overview zoom so the central ground is never viewed far enough to out-run the buffer.
+  let near, far, minD, maxD;
+  if (SCENE_ID === 'WHE5')    { near = 0.2; far = 1500; minD = 1;   maxD = 600; }
+  else if (SCENE_ID === 'Z3') { near = 0.5; far = 2000; minD = 1.5; maxD = 600; }
+  else                        { near = 1.5; far = 3000; minD = 3;   maxD = 720; }
+  if (camera.near !== near || camera.far !== far) { camera.near = near; camera.far = far; camera.updateProjectionMatrix(); }
+  controls.minDistance = minD; controls.maxDistance = maxD;
+}
 function fitAll(transition) {
+  applyDepthRange();
   fitBox.makeEmpty();
   for (const id in elIndex) {           // frame the plot, not the surrounding desert/context plane
     if (_CTX_RE.test(id)) continue;
@@ -397,7 +412,11 @@ function placeGround() {
       ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
     } catch (e) { console.warn('ground', e); return; }
   }
-  ground.position.set(gc.x, -0.03, gc.z); renderer.shadowMap.needsUpdate = true;
+  ground.position.set(gc.x, -0.03, gc.z);
+  // The GLB also carries a site-wide 'ground' slab ~2cm below this textured pad — fully hidden by
+  // the pad, so drop it: a coplanar duplicate is pure z-fight fuel (the 20mm gap) and wasted overdraw.
+  for (const id in elIndex) { const e = elIndex[id]; if (e.type === 'ground') e.bm.setVisibleAt(e.iid, false); }
+  renderer.shadowMap.needsUpdate = true;
 }
 function refreshSceneUI() {
   const _sub = document.querySelector('#hud .sub');
@@ -485,12 +504,15 @@ addEventListener('resize', () => {
   if (composer) composer.setSize(innerWidth, innerHeight);
   needRender();
 });
-function renderFrame() { if (composer) composer.render(); else renderer.render(scene, camera); }
+// While the camera is moving we skip the N8AO pass (≈half the frame cost) for fluid
+// interaction, then render one full-quality AO frame the moment it comes to rest.
+function renderFrame(moving) { if (composer && !moving) composer.render(); else renderer.render(scene, camera); }
 function animate() {
   requestAnimationFrame(animate);
   const dt = clock.getDelta();
   const updated = controls.update(dt);
-  if (updated || needsRender) { needsRender = false; renderFrame(); }
+  if (updated) { renderFrame(true); needsRender = true; }            // moving → cheap frame; still owe a final AO frame
+  else if (needsRender) { needsRender = false; renderFrame(false); } // at rest → one crisp AO frame
 }
 
 // ---- boot ----
