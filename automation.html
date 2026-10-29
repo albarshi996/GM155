@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>أبوهادي 155 — خطة الأتمتة وتوزيع الروبوتات</title>
+<meta name="description" content="توزيع أنظمة التخزين وروبوتات المكوك على مخازن أبوهادي 155 حسب الحاجة، استنادًا إلى كتالوج AkdenizRack.">
+<style>
+ :root{
+  --navy:#0B2340; --navy2:#13335c; --amber:#f0b429; --amber-d:#d99a10;
+  --ink:#0b1f3a; --mut:#5a6b85; --line:#e2e7f0; --bg:#eef1f6; --card:#ffffff;
+  --shuttle:#f0b429; --mezz:#8a5cc7; --canti:#2f9e8e; --ok:#2e8f4e;
+  --z1:#d93838; --z2:#1eb3db; --z3:#f2b81f; --z4:#33ad59; --z5:#3861d1;
+ }
+ *{box-sizing:border-box}
+ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,"Segoe UI",Arial,sans-serif;line-height:1.7;-webkit-text-size-adjust:100%}
+ a{color:#1a4f9c}
+ .wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+ /* hero */
+ header.hero{background:linear-gradient(135deg,#0B2340 0%,#16406e 60%,#1b4e86 100%);color:#fff;padding:30px 0 26px;border-bottom:4px solid var(--amber)}
+ .hero .kick{color:var(--amber);font-weight:700;font-size:13px;letter-spacing:.5px;margin:0 0 6px}
+ .hero h1{margin:0;font-size:27px;line-height:1.3}
+ .hero p.sub{margin:10px 0 0;color:#cdddf2;font-size:14px;max-width:760px}
+ .hero .tagline{margin-top:4px;color:#9fb6d4;font-size:12.5px}
+ .badge-prop{display:inline-block;margin-top:14px;background:rgba(240,180,41,.16);border:1px solid var(--amber);color:#ffe4a6;border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:700}
+ /* stats */
+ .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:-28px 0 0;position:relative;z-index:2}
+ .stat{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--amber);border-radius:12px;padding:14px 12px;box-shadow:0 6px 20px rgba(11,35,64,.08);text-align:center}
+ .stat .n{font-size:30px;font-weight:800;color:var(--navy);line-height:1}
+ .stat .l{font-size:12px;color:var(--mut);margin-top:6px}
+ /* sections */
+ section{margin:34px 0}
+ h2.sec{font-size:20px;color:var(--navy);margin:0 0 4px;display:flex;align-items:center;gap:9px}
+ h2.sec .bar{width:5px;height:22px;background:var(--amber);border-radius:3px;display:inline-block}
+ p.lead{color:var(--mut);margin:0 0 16px;font-size:14px}
+ /* diagram */
+ .diagram{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 4px 16px rgba(11,35,64,.06)}
+ .diagram svg{width:100%;height:auto;display:block;background:#f6f8fb;border-radius:10px}
+ .dlegend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:12px;font-size:12.5px;color:#33435f}
+ .dlegend b{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+ .sw{width:14px;height:14px;border-radius:4px;display:inline-block;vertical-align:middle}
+ .rbadge-key{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--amber);color:#0b2340;font-weight:800;font-size:11px}
+ /* cards grid */
+ .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+ .wcard{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:0 3px 12px rgba(11,35,64,.06);display:flex;flex-direction:column}
+ .wcard .top{display:flex;align-items:center;gap:10px;padding:12px 14px;color:#fff}
+ .wcard .top .wid{font-weight:800;font-size:16px}
+ .wcard .top .wfam{font-size:12px;opacity:.95;margin-inline-start:auto;text-align:left}
+ .wcard .rb{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700}
+ .wcard .body{padding:12px 14px;font-size:13px;flex:1;display:flex;flex-direction:column;gap:9px}
+ .row2{display:flex;gap:8px;flex-wrap:wrap}
+ .pill{background:#f1f4f9;border:1px solid var(--line);border-radius:7px;padding:3px 9px;font-size:11.5px;color:#34435d}
+ .pill.sys{background:#fff7e6;border-color:#f0d58e;color:#8a5f00;font-weight:700}
+ .pill.mezz{background:#f3edfb;border-color:#d8c6f0;color:#5c3a9e}
+ .pill.canti{background:#e8f6f3;border-color:#bfe6dd;color:#1f6e60}
+ .wcard .why{color:#3a4a63;font-size:12.5px;line-height:1.65}
+ .wcard .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--mut);border-top:1px dashed var(--line);padding-top:8px;margin-top:auto}
+ .wcard .meta b{color:var(--navy)}
+ /* systems reference */
+ .sysgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+ .sysc{background:var(--card);border:1px solid var(--line);border-inline-start:4px solid var(--amber);border-radius:11px;padding:12px 14px}
+ .sysc h3{margin:0 0 5px;font-size:14.5px;color:var(--navy)}
+ .sysc p{margin:0;font-size:12.5px;color:#44546e}
+ .sysc .use{margin-top:7px;font-size:11.5px;color:var(--ok);font-weight:600}
+ /* phases */
+ .phases{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+ .ph{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;border-top:3px solid var(--navy2)}
+ .ph.p1{border-top-color:var(--ok)} .ph.p2{border-top-color:var(--amber)} .ph.p3{border-top-color:#8a9ab5}
+ .ph h3{margin:0 0 6px;font-size:15px;color:var(--navy)}
+ .ph ul{margin:6px 0 0;padding-inline-start:18px;font-size:12.5px;color:#3c4c66}
+ .ph li{margin:3px 0}
+ /* note box */
+ .note{background:#fff8e8;border:1px solid #f0d890;border-radius:11px;padding:13px 15px;font-size:12.5px;color:#6f5300}
+ .note b{color:#7a4f00}
+ .note ul{margin:7px 0 0;padding-inline-start:18px}
+ /* footer */
+ footer{background:var(--navy);color:#cdddf2;margin-top:40px;padding:22px 0;font-size:12.5px}
+ footer .wrap{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+ footer a{color:var(--amber);text-decoration:none;font-weight:700;border:1px solid rgba(240,180,41,.5);border-radius:8px;padding:6px 12px;display:inline-block}
+ footer a:hover{background:rgba(240,180,41,.12)}
+ .src{color:#8fa6c6;font-size:11.5px}
+ @media(max-width:860px){ .stats{grid-template-columns:repeat(2,1fr)} .phases{grid-template-columns:1fr} .hero h1{font-size:22px} }
+ @media(max-width:520px){ .stats{grid-template-columns:1fr} }
+</style></head>
+<body>
+<header class="hero">
+ <div class="wrap">
+  <p class="kick">مخازن أبوهادي 155 · بنغازي — Brandzo</p>
+  <h1>خطة الأتمتة وتوزيع روبوتات المكوك <span style="color:var(--amber)">حسب الحاجة</span></h1>
+  <p class="sub">توزيع أنظمة التخزين وروبوتات المكوك (Pallet Shuttle) على مخازن الموقع الخمسة، مُصمَّمًا وفق عائلة البضائع ومعدّل الدوران وقيود الارتفاع الفعلية — استنادًا إلى كتالوج أنظمة التخزين <b>AkdenizRack</b>.</p>
+  <p class="tagline">المبدأ: تتركّز الروبوتات حيث تدفع تكلفتها فعليًّا (أصناف موحّدة · حجم كبير · ممرات عميقة · بيئة باردة)، وتُستبعد حيث لا تناسب (تنوّع عالٍ · بضاعة خفيفة · مواد طويلة).</p>
+  <span class="badge-prop">مقترح هندسي — غير منفّذ · أرقام تقديرية مبدئية تحتاج مسحًا ميدانيًّا</span>
+ </div>
+</header>
+
+<div class="wrap">
+ <div class="stats">
+  <div class="stat"><div class="n">28</div><div class="l">روبوت مكوك مقترح</div></div>
+  <div class="stat"><div class="n">7</div><div class="l">مخازن مؤتمتة (من 11)</div></div>
+  <div class="stat"><div class="n">≈ ×2</div><div class="l">الكثافة مقابل الرفوف العادية</div></div>
+  <div class="stat"><div class="n">−30°م</div><div class="l">تصنيف المكوك للتبريد</div></div>
+  <div class="stat"><div class="n">≈ 24k</div><div class="l">موضع بالتة تقديري</div></div>
+ </div>
+
+ <section>
+  <h2 class="sec"><span class="bar"></span>خريطة التوزيع على الموقع</h2>
+  <p class="lead">مخطط علوي للمناطق الخمس. لون كل مخزن = النظام الأساسي المقترح، والشارة الكهرمانية = عدد روبوتات المكوك المخصّصة له «حسب الحاجة».</p>
+  <div class="diagram">
+   <svg id="plan" viewBox="-6 -6 396 248" role="img" aria-label="مخطط توزيع الأنظمة والروبوتات على مخازن أبوهادي 155"></svg>
+   <div class="dlegend" id="legend"></div>
+  </div>
+ </section>
+
+ <section>
+  <h2 class="sec"><span class="bar"></span>التوزيع التفصيلي لكل مخزن</h2>
+  <p class="lead">لكل مخزن: النظام الأساسي، الأنظمة المكمّلة، عدد الروبوتات، مكسب الكثافة، والمبرّر «حسب الحاجة».</p>
+  <div class="grid" id="cards"></div>
+ </section>
+
+ <section>
+  <h2 class="sec"><span class="bar"></span>الأنظمة المختارة من كتالوج AkdenizRack</h2>
+  <p class="lead">اقتصر الاختيار على الأنظمة المتوافقة مع الارتفاع الفعلي (جاف 6.80م · مبرّد 5.0م). الأنظمة عالية البهو (AS/RS · VNA بـ18م) تُذكر كرؤية توسّع مستقبلية فقط.</p>
+  <div class="sysgrid" id="sysgrid"></div>
+ </section>
+
+ <section>
+  <h2 class="sec"><span class="bar"></span>منطق التحجيم والتنفيذ المرحلي</h2>
+  <div class="phases">
+   <div class="ph p1">
+    <h3>المرحلة 1 — الأثر الأعلى</h3>
+    <ul>
+     <li>المجمع المبرّد: البدء بـ <b>6 مكوكات</b> للغرف الأكثر حركة (إخراج العمّال من البرد القارس أولًا).</li>
+     <li>E-5 (أكبر مخزن جاف): <b>5 مكوكات</b> + واجهة رفوف انتقائية.</li>
+     <li>المشروبات E-7/E-2: <b>5 مكوكات</b> + رفوف انسيابية FIFO.</li>
+    </ul>
+   </div>
+   <div class="ph p2">
+    <h3>المرحلة 2 — التوسّع</h3>
+    <ul>
+     <li>إكمال المبرّد إلى <b>12 مكوكًا</b> مع ارتفاع الإنتاجية.</li>
+     <li>الأغذية الجافة E-6/E-1/E-8: <b>6 مكوكات</b> (2 لكل مخزن).</li>
+     <li>تركيب ميزانين الملابس E-3 والألعاب E-9.</li>
+    </ul>
+   </div>
+   <div class="ph p3">
+    <h3>المرحلة 3 — رؤية مستقبلية</h3>
+    <ul>
+     <li>كابولي/درايف-إن لمواد التغليف E-4/E-10.</li>
+     <li>ربط WMS/WCS وقراءة الباركود عبر الموقع.</li>
+     <li>عند أي توسعة رأسية مستقبلية: دراسة AS/RS أو VNA عالية البهو.</li>
+    </ul>
+   </div>
+  </div>
+  <div class="note" style="margin-top:14px">
+   <b>طريقة تقدير عدد الروبوتات:</b> من بصمة كل مخزن نُقدّر ممرات التخزين العميقة (خطوة بالتة ≈ 1.35م عرضًا، بعد خصم ممر مناولة/انتقاء 3.5–4م)، ثم:
+   <br><b>الروبوتات = ⌈ الممرات النشطة ÷ (ممرات لكل مكوك) ⌉</b>، حيث «ممرات لكل مكوك» = 5 للدوران العالي (المبرّد · المشروبات · الأغذية السريعة)، 8 للمتوسط، 12 للبطيء. المكوكات <b>مُشترَكة</b> بين الممرات (تُنقل برافعة/عربة تحويل) فلا يلزم مكوك لكل ممر.
+   <ul>
+    <li>الأرقام تقديرية لمرحلة الاقتراح — ولم يُبنَ شيء بعد — وتحتاج تثبيتًا بعد مسح أعداد الأصناف ومعدّلات الدوران وأوزان المنصّات (المكوك يحمل حتى 1500 كجم بسرعة 1م/ث).</li>
+    <li>قيد الارتفاع (جاف 6.80م ⇒ 3 مستويات، مبرّد 5.0م ⇒ 2–3): الكثافة مصدرها <b>عمق الممرات لا الارتفاع</b>.</li>
+    <li>الأعماق الظاهرية (110/100م) تُقسَّم عمليًّا بممرات عرضية فاصلة، ما قد يخفض السعة ~10–15٪.</li>
+   </ul>
+  </div>
+ </section>
+</div>
+
+<footer>
+ <div class="wrap">
+  <div>
+   <div style="color:#fff;font-weight:700;margin-bottom:4px">أبوهادي 155 — عرض المدير العام</div>
+   <div class="src">المصدر المرجعي: كتالوج AkdenizRack (أنظمة التخزين والمستودعات) · التصميم وفق مخطط NAS-8155 (5 مناطق).</div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+   <a href="hq/?scene=full">↩ العارض الواقعي (HQ)</a>
+   <a href="viewer.html">المخطط التفصيلي</a>
+  </div>
+ </div>
+</footer>
+
+<script>
+const SYS={
+ shuttle:{name:'مكوك الباليت (الروبوت)',color:'#f0b429',cls:'sys',
+   desc:'ناقل نصف آلي يعمل داخل الممرات العميقة دون دخول الرافعة؛ سرعة 1م/ث، حمولة حتى 1500كجم، مصنّف للتبريد حتى −30°م، FIFO/LIFO.',
+   use:'الأمثل للأصناف الموحّدة عالية الحجم والبيئات الباردة — كثافة ≈ ضعف الرفوف العادية (320 → 650 بالتة بنفس البصمة).'},
+ flow:{name:'الرفوف الانسيابية (Pallet Flow)',color:'#2f74c0',cls:'',
+   desc:'ممرات بكرات بميل 4% تنزلق عليها البالات بالجاذبية؛ FIFO، طاقة صفرية، فصل الإدخال عن الإخراج.',
+   use:'الأمثل للأصناف سريعة الدوران قصيرة الصلاحية وتجهيز الطلبات السريع (المشروبات والمبرّدات).'},
+ mobile:{name:'الرفوف المتحركة (Mobile)',color:'#5a84c0',cls:'',
+   desc:'رفوف على قواعد متحرّكة؛ يُفتح الممر عند الحاجة فقط، سعة أعلى حتى 90%، وفعّالة في التبريد.',
+   use:'بديل موفّر لطاقة التبريد في غرف متوسطة الدوران.'},
+ selective:{name:'الرفوف الانتقائية (Selective)',color:'#7c8aa3',cls:'',
+   desc:'وصول مباشر لكل بالتة، أقصى مرونة أصناف، توافق باركود — الكثافة الأساس (المرجع).',
+   use:'واجهة انتقاء وتجهيز طلبات وأصناف قليلة الكمية.'},
+ drivein:{name:'رفوف الدخول (Drive-In)',color:'#9a7bb5',cls:'',
+   desc:'ممرات عميقة تدخلها الرافعة على قضبان؛ كثافة 80%+ بأقل كلفة، FIFO/LIFO.',
+   use:'الأمثل للأصناف الموحّدة بطيئة الدوران.'},
+ mezz:{name:'الميزانين (Mezzanine)',color:'#8a5cc7',cls:'mezz',
+   desc:'طابق إضافي يستثمر الارتفاع لإنشاء مساحة انتقاء يدوي على مستويين (مصعد بضائع).',
+   use:'الأمثل للأصناف عالية التنوّع الخفيفة (الملابس · الألعاب).'},
+ canti:{name:'رفوف الكابولي (Cantilever)',color:'#2f9e8e',cls:'canti',
+   desc:'أذرع مفتوحة لتخزين المواد الطويلة والضخمة بوصول مباشر لكل صنف، أحادية/ثنائية الجانب.',
+   use:'الأمثل للمواد الطويلة (مساند · ألواح · تغليف طويل).'},
+};
+const ZONES=[
+ {z:'Z1',name:'الإدارة والخدمات',x:14,y:146,w:66,d:56,color:'#d93838'},
+ {z:'Z2',name:'المواقف والبوابة',x:14,y:20,w:78,d:104,color:'#1eb3db'},
+ {z:'Z3',name:'المجمّع المبرّد',x:96,y:62,w:92,d:78,color:'#f2b81f'},
+ {z:'Z4',name:'المستودعات الرئيسية',x:190,y:60,w:184,d:130,color:'#33ad59'},
+ {z:'Z5',name:'المستودعات الجنوبية',x:20,y:18,w:314,d:30,color:'#3861d1'},
+];
+const PLOT=[[4,6],[4,170],[14,212],[250,236],[360,176],[384,92],[360,6]];
+// warehouses: SW-corner (x,y) + size LX×DY ; sys=primary ; robots per need
+const WH=[
+ {id:'E-5',x:212,y:150,LX:100,DY:35,fam:'غذائي جاف',zone:'Z4',sys:'shuttle',sec:['selective','flow'],robots:5,dens:'+90 إلى +100%',pos:'≈ 3,800–4,500',
+  why:'أكبر مخزن جاف وأعلى دورانًا؛ بضاعة موحّدة عالية الحجم قابلة للتخزين العميق ⇒ المكوك يضاعف الكثافة ويخرج الرافعة من الممر مع FIFO لتدوير الصلاحية.'},
+ {id:'E-7',x:258,y:64,LX:110,DY:20,fam:'مشروبات',zone:'Z4',sys:'shuttle',sec:['flow','selective'],robots:3,dens:'+90 إلى +100%',pos:'≈ 2,000–2,400',
+  why:'المشروبات متجانسة وثقيلة وعالية الدوران بنظام FIFO — الحالة المثالية للممرات العميقة؛ تُكمَّل برفوف انسيابية كواجهة شحن سريعة.'},
+ {id:'E-6',x:258,y:92,LX:110,DY:20,fam:'غذائي جاف',zone:'Z4',sys:'shuttle',sec:['selective','drivein'],robots:2,dens:'+100%',pos:'≈ 2,700–3,000',
+  why:'أغذية جافة قياسية (علب/أكياس/طبليات موحّدة) ⇒ تخزين عميق مؤتمت يضاعف الكثافة؛ واجهة انتقائية صغيرة لتجهيز الطلبات.'},
+ {id:'E-1',x:258,y:120,LX:110,DY:20,fam:'غذائي جاف',zone:'Z4',sys:'shuttle',sec:['selective','drivein'],robots:2,dens:'+100%',pos:'≈ 2,700–3,000',
+  why:'نفس ملف E-6: أصناف موحّدة عالية الحجم ⇒ مكوكان يكفيان لتشغيل الكتلة (دوران متوسط · 8 ممرات/مكوك).'},
+ {id:'E-2',x:196,y:120,LX:50,DY:20,fam:'مشروبات',zone:'Z4',sys:'shuttle',sec:['flow','selective'],robots:2,dens:'+90 إلى +100%',pos:'≈ 900–1,000',
+  why:'مشروبات عالية الدوران في مبنى أصغر ⇒ مكوكان + خط انسيابي سريع FIFO.'},
+ {id:'E-8',x:26,y:22,LX:110,DY:20,fam:'غذائي جاف',zone:'Z5',sys:'shuttle',sec:['selective','drivein'],robots:2,dens:'+100%',pos:'≈ 2,700–3,000',
+  why:'أغذية جافة قياسية بالمستودعات الجنوبية ⇒ تخزين عميق بمكوكين وواجهة انتقاء.'},
+ {id:'E-3',x:196,y:92,LX:50,DY:20,fam:'ملابس',zone:'Z4',sys:'mezz',sec:['selective'],robots:0,dens:'+85%',pos:'ميزانين طابقان',
+  why:'الملابس خفيفة وعالية التنوّع (كراتين ومعلّقات) تحتاج وصولًا مباشرًا وانتقاءً يدويًّا لا ممرات عميقة ⇒ ميزانين يضاعف مساحة الانتقاء. لا روبوت.'},
+ {id:'E-9',x:150,y:22,LX:110,DY:20,fam:'ألعاب ومدينة الألعاب',zone:'Z5',sys:'mezz',sec:['selective'],robots:0,dens:'+90%',pos:'ميزانين + انتقائي',
+  why:'الألعاب شديدة التنوّع خفيفة موسمية — أسوأ ملف للأتمتة العميقة ⇒ ميزانين + رفوف انتقائية لأقصى مرونة بين المواسم. لا روبوت.'},
+ {id:'E-4',x:196,y:64,LX:50,DY:20,fam:'تغليف ومساند',zone:'Z4',sys:'canti',sec:['drivein','selective'],robots:0,dens:'+60%',pos:'كابولي + درايف-إن',
+  why:'مواد طويلة/ضخمة منخفضة الدوران لا يستوعبها المكوك القياسي ⇒ كابولي للطويل + درايف-إن للمعبّأ الموحّد. لا روبوت.'},
+ {id:'E-10',x:276,y:22,LX:50,DY:20,fam:'تغليف ومساند',zone:'Z5',sys:'canti',sec:['drivein','selective'],robots:0,dens:'+60%',pos:'كابولي + درايف-إن',
+  why:'نفس ملف E-4: مواد طويلة متنوّعة منخفضة الدوران ⇒ كابولي/درايف-إن، والكثافة أفقية لا رأسية. لا روبوت.'},
+];
+const COLD={id:'المجمّع المبرّد',x:100,y:68,LX:80,DY:65,fam:'لحوم ومجمّدات −20°م',zone:'Z3',sys:'shuttle',sec:['selective','flow','mobile'],robots:12,dens:'+100%',pos:'≈ 2,800–3,600',
+  why:'يعمل عند −20°م وأغلب بضائعه موحّدة عالية الحجم ⇒ المكوك المصنّف −30°م مثالي: يرفع الكثافة ≈ الضعف ويُخرج العمّال من البرد القارس مع FIFO/FEFO لتدوير الأغذية المؤرّخة. أكبر تمركز للروبوتات في الموقع.'};
+const ALL=[COLD,...WH];
+
+// ---- SVG diagram ----
+const H=236, NS='http://www.w3.org/2000/svg';
+const sx=x=>x, sy=y=>H-y;                 // flip north-up
+function el(tag,at){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);return e;}
+const svg=document.getElementById('plan');
+// plot outline
+const poly=el('polygon',{points:PLOT.map(p=>`${sx(p[0])},${sy(p[1])}`).join(' '),fill:'#eef2f8',stroke:'#c3cde0','stroke-width':'1.2'});
+svg.appendChild(poly);
+// zones (translucent)
+ZONES.forEach(z=>{
+ svg.appendChild(el('rect',{x:sx(z.x),y:sy(z.y+z.d),width:z.w,height:z.d,rx:3,fill:z.color,'fill-opacity':'0.07',stroke:z.color,'stroke-opacity':'0.5','stroke-dasharray':'3 2','stroke-width':'0.7'}));
+ const t=el('text',{x:sx(z.x)+3,y:sy(z.y+z.d)+9,fill:z.color,'font-size':'5.6','font-weight':'700'});t.textContent=z.z;svg.appendChild(t);
+});
+// warehouses
+ALL.forEach(w=>{
+ const col=SYS[w.sys].color, rx=sx(w.x), ry=sy(w.y+w.DY);
+ svg.appendChild(el('rect',{x:rx,y:ry,width:w.LX,height:w.DY,rx:2,fill:col,'fill-opacity':w.robots?0.85:0.6,stroke:'#223344','stroke-opacity':'0.25','stroke-width':'0.5'}));
+ const cx=rx+w.LX/2, cy=ry+w.DY/2;
+ const id=el('text',{x:cx,y:cy-1,fill:'#1a2740','font-size':'5.4','font-weight':'800','text-anchor':'middle'});id.textContent=w.id;svg.appendChild(id);
+ const fam=el('text',{x:cx,y:cy+5,fill:'#2b3a57','font-size':'3.6','text-anchor':'middle'});fam.textContent=w.fam;svg.appendChild(fam);
+ if(w.robots){ // robot badge top-left corner (RTL: start side)
+  const bx=rx+w.LX-5.5, by=ry+5.5;
+  svg.appendChild(el('circle',{cx:bx,cy:by,r:4.6,fill:'#0B2340',stroke:'#f0b429','stroke-width':'0.8'}));
+  const rn=el('text',{x:bx,y:by+2.3,fill:'#f0b429','font-size':'5','font-weight':'800','text-anchor':'middle'});rn.textContent=w.robots;svg.appendChild(rn);
+ }
+});
+// title + north arrow
+const nn=el('text',{x:sx(372),y:sy(228),fill:'#5a6b85','font-size':'5','text-anchor':'middle'});nn.textContent='ش ↑';svg.appendChild(nn);
+
+// legend
+const lg=document.getElementById('legend');
+[['shuttle','مكوك (روبوت)'],['mezz','ميزانين'],['canti','كابولي']].forEach(([k,n])=>{
+ const b=document.createElement('b');b.innerHTML=`<span class="sw" style="background:${SYS[k].color}"></span>${n}`;lg.appendChild(b);
+});
+const rb=document.createElement('b');rb.innerHTML=`<span class="rbadge-key">n</span>عدد روبوتات المكوك`;lg.appendChild(rb);
+
+// ---- cards ----
+const zc={Z1:'#d93838',Z2:'#1eb3db',Z3:'#f2b81f',Z4:'#33ad59',Z5:'#3861d1'};
+const cards=document.getElementById('cards');
+ALL.forEach(w=>{
+ const topcol=SYS[w.sys].color, dark=(w.sys==='shuttle');
+ const c=document.createElement('div');c.className='wcard';
+ const secPills=w.sec.map(s=>`<span class="pill">${SYS[s].name}</span>`).join('');
+ c.innerHTML=`
+  <div class="top" style="background:${w.sys==='shuttle'?'linear-gradient(135deg,#13335c,#1b4e86)':(w.sys==='mezz'?'linear-gradient(135deg,#5c3a9e,#7b57c0)':'linear-gradient(135deg,#1f6e60,#2f9e8e)')}">
+   <span class="wid">${w.id}</span>
+   ${w.robots?`<span class="rb">🤖 ${w.robots} مكوك</span>`:`<span class="rb" style="background:rgba(255,255,255,.1)">بدون روبوت</span>`}
+   <span class="wfam">${w.fam}<br><span style="opacity:.8">${w.zone}</span></span>
+  </div>
+  <div class="body">
+   <div class="row2"><span class="pill ${SYS[w.sys].cls}">النظام: ${SYS[w.sys].name}</span>${secPills}</div>
+   <div class="why">${w.why}</div>
+   <div class="meta"><span>الكثافة: <b>${w.dens}</b></span><span>مواقع البالتة: <b>${w.pos}</b></span></div>
+  </div>`;
+ cards.appendChild(c);
+});
+
+// ---- systems reference ----
+const sg=document.getElementById('sysgrid');
+['shuttle','flow','mobile','selective','drivein','mezz','canti'].forEach(k=>{
+ const s=SYS[k];const d=document.createElement('div');d.className='sysc';d.style.borderInlineStartColor=s.color;
+ d.innerHTML=`<h3>${s.name}</h3><p>${s.desc}</p><div class="use">✔ ${s.use}</div>`;sg.appendChild(d);
+});
+</script>
+</body></html>
