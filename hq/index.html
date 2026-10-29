@@ -69,6 +69,10 @@
   <button data-q="hi" class="on" aria-pressed="true" title="إضاءة محيطة (N8AO) وظلال كاملة — الأنسب للعروض">جودة عالية</button>
   <button data-q="lo" aria-pressed="false" title="إطفاء الإضاءة المحيطة والظلال — أخفّ وأسرع على الأجهزة الضعيفة">أداء أعلى</button>
  </div>
+ <div class="row" style="margin-top:7px;align-items:center">
+  <label><input type="checkbox" id="robots"> 🤖 الروبوتات <span style="color:#9fb3d0;font-size:10px">(مقترح)</span></label>
+  <a id="planbtn" href="../automation.html" target="_blank" rel="noopener" title="خطة الأتمتة وتوزيع روبوتات المكوك حسب الحاجة — استنادًا إلى كتالوج AkdenizRack" style="margin-inline-start:auto;background:#f0b429;color:#0b2340;border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700;text-decoration:none">خطة الأتمتة ↗</a>
+ </div>
  <div class="sub" id="stats" style="margin-top:6px"></div>
 </div>
 <div id="legend">
@@ -490,6 +494,7 @@ async function switchScene(id) {
   buildBatches();
   fitAll(false);
   placeGround();
+  buildRobots();
   refreshSceneUI();
   const _roof = document.getElementById('roof'); if (_roof) _roof.checked = true;     // new scene starts with roofs on
   const _ghost = document.getElementById('ghost'); if (_ghost) _ghost.checked = false; // and ghost off
@@ -521,6 +526,61 @@ function setPerf(on) {
   needRender();
 }
 document.querySelectorAll('#qmode button').forEach((b) => b.addEventListener('click', () => setPerf(b.dataset.q === 'lo')));
+
+// ---- proposed pallet-shuttle ROBOTS overlay (off by default; counts per the automation plan) ----
+// build coords (x=east, y=north, SW corner + size); placed at three.js (x, 0, -y). s = the single-warehouse scene it belongs to.
+let robotsGroup = null, robotsOn = false;
+const ROBOT_WH = [
+  { id:'E-5', s:'WHE5', x:212, y:150, LX:100, DY:35, n:5 },
+  { id:'COLD', s:'Z3',  x:100, y:68,  LX:80,  DY:65, n:12 },
+  { id:'E-7', s:'',     x:258, y:64,  LX:110, DY:20, n:3 },
+  { id:'E-6', s:'',     x:258, y:92,  LX:110, DY:20, n:2 },
+  { id:'E-1', s:'',     x:258, y:120, LX:110, DY:20, n:2 },
+  { id:'E-2', s:'',     x:196, y:120, LX:50,  DY:20, n:2 },
+  { id:'E-8', s:'',     x:26,  y:22,  LX:110, DY:20, n:2 },
+];
+const _rbGeo = { base:new THREE.BoxGeometry(0.95,0.24,1.55), top:new THREE.BoxGeometry(0.82,0.10,1.28), ant:new THREE.BoxGeometry(0.06,0.55,0.06), led:new THREE.BoxGeometry(0.14,0.09,0.14) };
+const _rbMat = {
+  base:new THREE.MeshStandardMaterial({ color:0x2b2e35, roughness:0.55, metalness:0.45 }),
+  top: new THREE.MeshStandardMaterial({ color:0xf0b429, roughness:0.5, metalness:0.2 }),
+  ant: new THREE.MeshStandardMaterial({ color:0x1b1d22, roughness:0.6, metalness:0.3 }),
+  led: new THREE.MeshStandardMaterial({ color:0x27e06a, emissive:0x19c257, emissiveIntensity:1.1, roughness:0.4 }),
+};
+function makeShuttle() {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(_rbGeo.base, _rbMat.base); base.position.y = 0.14; base.castShadow = true;
+  const top  = new THREE.Mesh(_rbGeo.top, _rbMat.top);   top.position.y = 0.31;
+  const ant  = new THREE.Mesh(_rbGeo.ant, _rbMat.ant);   ant.position.set(0.36, 0.55, -0.6);
+  const led  = new THREE.Mesh(_rbGeo.led, _rbMat.led);   led.position.set(0, 0.31, 0.72);
+  g.add(base, top, ant, led);
+  g.traverse((o) => { o.raycast = () => {}; });   // overlay — never intercept click-selection
+  return g;
+}
+function robotLayout(x, y, LX, DY, n) {
+  // stage the shuttles along the warehouse's central aisle (its long axis) so they sit in the open, not inside racks
+  const alongX = LX >= DY, L = alongX ? LX : DY, m = Math.min(9, L * 0.13), span = Math.max(1, L - 2 * m), pts = [];
+  for (let k = 0; k < n; k++) {
+    const t = n === 1 ? 0.5 : k / (n - 1), a = m + t * span;
+    pts.push(alongX ? [x + a, y + DY / 2] : [x + LX / 2, y + a]);
+  }
+  return pts;
+}
+function buildRobots() {
+  if (!robotsGroup) { robotsGroup = new THREE.Group(); scene.add(robotsGroup); }
+  while (robotsGroup.children.length) robotsGroup.remove(robotsGroup.children[0]);   // shared geo/mat → nothing to dispose
+  for (const w of ROBOT_WH) {
+    if (SCENE_ID === 'WHE5' && w.s !== 'WHE5') continue;
+    if (SCENE_ID === 'Z3' && w.s !== 'Z3') continue;   // full → every warehouse
+    for (const [px, py] of robotLayout(w.x, w.y, w.LX, w.DY, w.n)) {
+      const sh = makeShuttle(); sh.position.set(px, 0.0, -py); robotsGroup.add(sh);
+    }
+  }
+  robotsGroup.visible = robotsOn;
+  renderer.shadowMap.needsUpdate = true;
+}
+function setRobots(on) { robotsOn = on; if (robotsGroup) robotsGroup.visible = on; renderer.shadowMap.needsUpdate = true; needRender(); }
+const _rbCb = document.getElementById('robots'); if (_rbCb) _rbCb.onchange = (e) => setRobots(e.target.checked);
+
 function animate() {
   requestAnimationFrame(animate);
   const dt = clock.getDelta();
@@ -539,6 +599,7 @@ function animate() {
   buildBatches();
   fitAll(false);
   placeGround();
+  buildRobots();
   refreshSceneUI();
   document.getElementById('load').style.display = 'none';
   animate();
